@@ -6,9 +6,13 @@
 package ch.bbzsogr.ict2019;
 
 import ch.bbzsogr.ict2019.db.DbConnector;
+import ch.bbzsogr.ict2019.model.Game;
 import ch.bbzsogr.ict2019.model.Tournament;
+import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.CreateTournament;
 import ch.bbzsogr.ict2019.views.TournamentList;
+
+import java.sql.SQLException;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -40,6 +44,12 @@ public class Controller implements EventHandler<ActionEvent> {
         tournamentListView.populateTable(tournamentList);
         tournamentListView.addActions( this );
     }
+
+    private void createCreateTournamentView(){
+        createTournamentView = new CreateTournament( primaryStage );
+        createTournamentView.addActions( this );
+        createTournamentView.populateGames( db.readeGames() );
+    }
     
     @Override
     public void handle(ActionEvent event) {  
@@ -48,13 +58,33 @@ public class Controller implements EventHandler<ActionEvent> {
         {
 
         }else if ( source == this.tournamentListView.getAddTournamentBtn() ){
-            createTournamentView = new CreateTournament( primaryStage );
-            createTournamentView.addActions( this );
+            createCreateTournamentView();
+        } else if ( this.createTournamentView != null && source == this.createTournamentView.getCreateBtn() )
+        {
+            createNewTournament();
         }
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
             this.view.updateLabel( this.model.getCount());
         }*/
     }
-    
+
+    private void createNewTournament(){
+        Game selectedGame = createTournamentView.getSelectedGame();
+        String name = createTournamentView.getTournamentName();
+        int size = createTournamentView.getTournamentSize();
+        if ( ValidationUtil.validateCreateTournament( name, size, selectedGame ) ){
+            try
+            {
+                db.createTournament( name, size, selectedGame.getId(), 0);
+            }
+            catch ( SQLException throwables )
+            {
+                createTournamentView.setError( "Error while create Tournament" );
+            }
+            createTournamentView.closeWindow();
+        }
+        else createTournamentView.setError( "Input is not valid" );
+
+    }
 }

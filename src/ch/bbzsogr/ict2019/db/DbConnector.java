@@ -5,11 +5,10 @@
  */
 package ch.bbzsogr.ict2019.db;
 
+import ch.bbzsogr.ict2019.model.Game;
 import ch.bbzsogr.ict2019.model.Tournament;
-import com.mysql.jdbc.Statement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class DbConnector {
     }
     
     public List<Tournament> readTournament(){
-        java.sql.Statement sqlStatement;
+        Statement sqlStatement;
         ResultSet result;
         List<Tournament> returnValue = new ArrayList<>();
         
@@ -55,5 +54,38 @@ public class DbConnector {
             System.out.println(e);
         }
         return returnValue;
+    }
+    public List<Game> readeGames(){
+        Statement sqlStatement;
+        ResultSet result;
+        List<Game> returnValue = new ArrayList<>();
+
+        String query = "SELECT game.ID AS id, game.Name AS name FROM game;";
+
+        try {
+            sqlStatement = conn.createStatement();
+            sqlStatement.execute(query);
+            result = sqlStatement.getResultSet();
+            while (result.next()) {
+                returnValue.add(new Game(result.getInt("id"), result.getString("name")));
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return returnValue;
+    }
+
+    public void createTournament(String name, int size, int gameId, int gameStand) throws SQLException
+    {
+        String sql = "INSERT INTO tournament(Title, GameId, Size, TournamentState) "
+                + "VALUES(?,?,?,?)";
+
+        PreparedStatement preparedStatement = conn.prepareStatement( sql );
+        preparedStatement.setString( 1, name );
+        preparedStatement.setInt( 2, gameId );
+        preparedStatement.setInt( 3, size );
+        preparedStatement.setInt( 4, gameStand );
+        preparedStatement.executeUpdate();
     }
 }

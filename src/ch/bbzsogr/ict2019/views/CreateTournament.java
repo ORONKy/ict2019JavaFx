@@ -5,15 +5,22 @@
  */
 package ch.bbzsogr.ict2019.views;
 
+import ch.bbzsogr.ict2019.model.Game;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,24 +29,26 @@ import java.util.List;
  */
 public class CreateTournament {
 	private final String WINDOW_TITLE = "Create Tournament";
-	private final int WINDOW_MIN_WIDTH = 300;
-	private final int WINDOW_MIN_HEIGHT = 200;
+	private final int WINDOW_MIN_WIDTH = 500;
+	private final int WINDOW_MIN_HEIGHT = 250;
 
 	private Label titleLabel;
 	private Label gameLabel;
 	private Label sizeLabel;
 
 	private TextField titleTextField;
-	private String errorMessage;
+	private Label errorTextField;
 
 	private Button createBtn;
 
 	private ComboBox gameDropdown;
-	private ObservableList gamesList;
+	private ObservableList<Game> gamesList;
 
 	private Spinner<Integer> sizeSpinner;
 
 	private GridPane gridPane;
+
+	private Stage stage;
 
 
 	public CreateTournament ( Stage primaryStage)
@@ -53,9 +62,15 @@ public class CreateTournament {
 		gridPane.add( gameDropdown, 1, 1 );
 		gridPane.add( sizeLabel, 0, 2 );
 		gridPane.add( sizeSpinner, 1, 2 );
+		gridPane.add(errorTextField, 0, 3, 2,1);
+		gridPane.add( createBtn, 1, 4 );
+
+		gridPane.setHgap( 30 );
+		gridPane.setVgap( 15 );
+		GridPane.setHalignment(createBtn, HPos.RIGHT);
 
 		Scene scene = new Scene( gridPane );
-		Stage stage = new Stage();
+		stage = new Stage();
 		stage.setMinHeight( WINDOW_MIN_HEIGHT );
 		stage.setMinWidth( WINDOW_MIN_WIDTH );
 		stage.setTitle( WINDOW_TITLE );
@@ -73,16 +88,64 @@ public class CreateTournament {
 		sizeLabel = new Label("Size");
 
 		titleTextField = new TextField("");
+		errorTextField = new Label("");
+		errorTextField.setTextFill( Color.RED);
 
 		gameDropdown = new ComboBox();
-		gameDropdown.getItems().addAll( List.of("fisch", "csgo") );
 
 		sizeSpinner = new Spinner<>();
+		SpinnerValueFactory<Integer> sizeSpinnerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory( 2, 100, 1 );
+		sizeSpinner.setValueFactory( sizeSpinnerValueFactory );
 	}
-
-
 
 	public void addActions( EventHandler<ActionEvent> evh) {
 		createBtn.setOnAction( evh );
+	}
+
+	public void populateGames(List<Game> games){
+		gamesList = FXCollections.observableArrayList(games);
+		gameDropdown.getItems().addAll( gamesList);
+		Callback<ListView<Game>, ListCell<Game>> cellFactory = new Callback<ListView<Game>, ListCell<Game>>() {
+			@Override
+			public ListCell<Game> call(ListView<Game> l) {
+				return new ListCell<Game>() {
+					@Override
+					protected void updateItem(Game item, boolean empty) {
+						super.updateItem(item, empty);
+						if (item == null || empty) {
+							setGraphic(null);
+						} else {
+							setText(item.getName());
+						}
+					}
+				} ;
+			}
+		};
+		gameDropdown.setCellFactory( cellFactory );
+		gameDropdown.setButtonCell(cellFactory.call(null));
+	}
+
+	public Game getSelectedGame(){
+		return (Game) gameDropdown.getValue();
+	}
+
+	public String getTournamentName(){
+		return titleTextField.getText();
+	}
+
+	public int getTournamentSize(){
+		return sizeSpinner.getValue();
+	}
+
+	public Button getCreateBtn(){
+		return createBtn;
+	}
+
+	public void setError(String error){
+		errorTextField.setText( error );
+	}
+
+	public void closeWindow(){
+		stage.close();
 	}
 }
