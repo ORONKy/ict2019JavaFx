@@ -10,15 +10,21 @@ package ch.bbzsogr.ict2019.model;
  * @author varot
  */
 public class Tournament {
+    private int id;
     private String title;
     private String game;
     private String winner;
+    private int tournamentSize;
 
-    public Tournament(String title, String game, String winner) {
+    public Tournament ( int id, String title, String game, String winner, int tournamentSize )
+    {
+        this.id = id;
         this.title = title;
         this.game = game;
         this.winner = winner;
+        this.tournamentSize = tournamentSize;
     }
+
 
     public String getTitle() {
         return title;
@@ -26,6 +32,16 @@ public class Tournament {
 
     public String getGame() {
         return game;
+    }
+
+    public int getId ()
+    {
+        return id;
+    }
+
+    public int getTournamentSize ()
+    {
+        return tournamentSize;
     }
 
     public String getWinner() {
