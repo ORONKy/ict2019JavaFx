@@ -77,6 +77,8 @@ public class Controller implements EventHandler<ActionEvent> {
             try
             {
                 db.createTournament( name, size, selectedGame.getId(), 0);
+                //TODO eventuel nicht erneuter db zugriff
+                tournamentListView.populateTable( db.readTournament() );
             }
             catch ( SQLException throwables )
             {
