@@ -111,4 +111,7 @@ public class TournamentList {
     {
         return addTournamentBtn;
     }
+    public Tournament getSelectedTournament(){
+        return (Tournament) tableView.getSelectionModel().getSelectedItem();
+    }
 }

@@ -6,6 +6,7 @@
 package ch.bbzsogr.ict2019.views;
 
 import ch.bbzsogr.ict2019.model.Game;
+import ch.bbzsogr.ict2019.model.Tournament;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;

@@ -14,6 +14,8 @@ import ch.bbzsogr.ict2019.views.TournamentList;
 
 import java.sql.SQLException;
 import java.util.List;
+
+import ch.bbzsogr.ict2019.views.TournamentOverview;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -27,6 +29,7 @@ public class Controller implements EventHandler<ActionEvent> {
     private Model model;
     private TournamentList tournamentListView;
     private CreateTournament createTournamentView;
+    private TournamentOverview tournamentOverviewView;
     private Stage primaryStage;
     private DbConnector db;
     
@@ -56,7 +59,7 @@ public class Controller implements EventHandler<ActionEvent> {
         Button source = (Button) event.getSource();
         if ( source == this.tournamentListView.getViewBtn() )
         {
-
+            createTournamentOverview();
         }else if ( source == this.tournamentListView.getAddTournamentBtn() ){
             createCreateTournamentView();
         } else if ( this.createTournamentView != null && source == this.createTournamentView.getCreateBtn() )
@@ -67,6 +70,11 @@ public class Controller implements EventHandler<ActionEvent> {
             this.model.increase();
             this.view.updateLabel( this.model.getCount());
         }*/
+    }
+
+    private void createTournamentOverview(){
+        Tournament selectedTournament = tournamentListView.getSelectedTournament();
+        tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament );
     }
 
     private void createNewTournament(){
