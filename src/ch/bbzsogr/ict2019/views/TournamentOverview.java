@@ -40,9 +40,10 @@ public class TournamentOverview {
 
 	private final String WINDOW_TITLE = "Tournament Overview";
 
-	public TournamentOverview ( Stage primaryStage, Tournament tournament)
+	public TournamentOverview ( Stage primaryStage, Tournament tournament, Tab participantTab)
 	{
 		this.tournament = tournament;
+		this.participantTab = participantTab;
 
 		initWindow();
 		initTabPane();
@@ -62,14 +63,16 @@ public class TournamentOverview {
 		stage = new Stage();
 		stage.setTitle( WINDOW_TITLE );
 		stage.initModality( Modality.WINDOW_MODAL );
+		stage.sizeToScene();
 		stage.setResizable( false );
 		stage.initOwner( primaryStage );
 		stage.setScene( scene );
+		stage.sizeToScene();
 		stage.show();
 	}
 
 	private void initWindow(){
-		img = new Image("header.png");
+		img = new Image("header.png", 341, 85, false, false);
 		imgView = new ImageView(img);
 		updateTournamentRelatedItems();
 
@@ -78,18 +81,12 @@ public class TournamentOverview {
 
 	private void initTabPane(){
 		tabPane = new TabPane();
+		tabPane.getTabs().add( participantTab );
 
-		participantTab = new Tab("participant");
-		matchesTab = new Tab("matches");
 		tabPane.setTabClosingPolicy( TabPane.TabClosingPolicy.UNAVAILABLE);
 
-		tabPane.getTabs().add( participantTab );
-		tabPane.getTabs().add( matchesTab );
 	}
 
-	public void populateTournament( Tournament tournament){
-		this.tournament = tournament;
-	}
 	private void updateTournamentRelatedItems(){
 		gameLabel = new Label(tournament.getGame());
 		gameLabel.setFont( Font.font( 40 ) );

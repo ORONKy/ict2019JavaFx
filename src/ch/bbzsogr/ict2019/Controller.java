@@ -10,6 +10,7 @@ import ch.bbzsogr.ict2019.model.Game;
 import ch.bbzsogr.ict2019.model.Tournament;
 import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.CreateTournament;
+import ch.bbzsogr.ict2019.views.ParticipantsTab;
 import ch.bbzsogr.ict2019.views.TournamentList;
 
 import java.sql.SQLException;
@@ -32,6 +33,7 @@ public class Controller implements EventHandler<ActionEvent> {
     private TournamentOverview tournamentOverviewView;
     private Stage primaryStage;
     private DbConnector db;
+    private ParticipantsTab participantsTab;
     
     
     public Controller(Stage primaryStage) {
@@ -74,7 +76,10 @@ public class Controller implements EventHandler<ActionEvent> {
 
     private void createTournamentOverview(){
         Tournament selectedTournament = tournamentListView.getSelectedTournament();
-        tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament );
+        participantsTab =  new ParticipantsTab( selectedTournament );
+        participantsTab.addActions( this );
+        participantsTab.populateTable( db.readParticipantsForTournament( selectedTournament.getId() ) );
+        tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament,participantsTab );
     }
 
     private void createNewTournament(){

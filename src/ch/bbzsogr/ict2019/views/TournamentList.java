@@ -47,8 +47,10 @@ public class TournamentList {
     public TournamentList(Stage primaryStage) {
         this.primaryStage = primaryStage;
         primaryStage.setTitle(WINDOW_TITLE);
+        gridPane = new GridPane();
         initWindow();
         initTable();
+
 
         viewBtn.disableProperty().bind(Bindings.isEmpty( tableView.getSelectionModel().getSelectedItems())  );
         
@@ -75,8 +77,6 @@ public class TournamentList {
     private void initTable(){
         tableView = new TableView<>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        
-        gridPane = new GridPane();
         
         TableColumn<Integer, Tournament> column1 = new TableColumn<>("title");
         column1.setCellValueFactory(new PropertyValueFactory<>("title"));
