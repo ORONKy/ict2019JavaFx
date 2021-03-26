@@ -166,13 +166,36 @@ public class DbConnector
 		addParticipantToTournament( participantAutoId, tournamentId );
 	}
 
-	public void addParticipantToTournament (int patricianId, int tournamentId) throws SQLException
+	public void addParticipantToTournament ( int patricianId, int tournamentId ) throws SQLException
 	{
 		String sql = "INSERT INTO participantintournament(TournamentID, ParticipantID) VALUES(?,?)";
 
-		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
 		preparedStatement.setInt( 1, tournamentId );
 		preparedStatement.setInt( 2, patricianId );
 		preparedStatement.executeUpdate();
+	}
+
+	public Participant readParticipant ( Participant participant ) throws SQLException
+	{
+		Participant returnValue = null;
+		String sql =
+				"SELECT participant.ID AS id, participant.Name AS name, participant.IsTeam AS team, participant.IsTemporary AS temporary "
+						+ "FROM participant " + "WHERE participant.Name = ? " + "AND participant.IsTeam = ? "
+						+ "AND participant.IsTemporary = ? ";
+
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setString( 1, participant.getName() );
+		preparedStatement.setInt( 2, participant.isTeam() ? 1 : 0 );
+		preparedStatement.setInt( 3, participant.isTemporary() ? 1 : 0 );
+		preparedStatement.executeQuery();
+
+		ResultSet res = preparedStatement.getResultSet();
+		if ( res.next() )
+		{
+			returnValue = new Participant( res.getInt( "id" ), res.getString( "name" ), res.getInt( "team" ) == 1,
+					res.getInt( "temporary" ) == 1 );
+		}
+		return returnValue;
 	}
 }

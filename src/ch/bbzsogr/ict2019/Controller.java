@@ -173,7 +173,14 @@ public class Controller implements EventHandler<ActionEvent>
 		{
 			try
 			{
-				db.createParticipant( participant, tournament.getId() );
+				Participant dbParticipant = db.readParticipant( participant );
+				if ( dbParticipant == null )
+				{
+					db.createParticipant( participant, tournament.getId() );
+				}else
+				{
+					db.addParticipantToTournament( dbParticipant.getId(), tournament.getId() );
+				}
 			}
 			catch ( SQLException throwables )
 			{

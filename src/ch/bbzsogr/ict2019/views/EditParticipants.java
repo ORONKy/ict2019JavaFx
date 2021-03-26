@@ -128,7 +128,7 @@ public class EditParticipants {
 	}
 
 	public Participant getEditedParticipant(){
-		return new Participant( participant.getId(), nameTextField.getText(), isTeamEdit(), temporaryCheckbox.isSelected(), participant.isNewUser());
+		return new Participant( participant.getId(), nameTextField.getText(),temporaryCheckbox.isSelected() , isTeamEdit(), participant.isNewUser());
 	}
 
 	public boolean isTeamEdit(){
