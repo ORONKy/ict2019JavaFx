@@ -82,6 +82,7 @@ public class TournamentOverview {
 	private void initTabPane(){
 		tabPane = new TabPane();
 		tabPane.getTabs().add( participantTab );
+		participantTab.setText( "participant" );
 
 		tabPane.setTabClosingPolicy( TabPane.TabClosingPolicy.UNAVAILABLE);
 
@@ -92,5 +93,10 @@ public class TournamentOverview {
 		gameLabel.setFont( Font.font( 40 ) );
 		tournamentNameLabel = new Label( tournament.getTitle());
 		tournamentNameLabel.setFont( Font.font( 55 ) );
+	}
+
+	public Button getExportBtn ()
+	{
+		return exportBtn;
 	}
 }

@@ -7,6 +7,7 @@ package ch.bbzsogr.ict2019.views;
 
 import ch.bbzsogr.ict2019.model.Participant;
 import ch.bbzsogr.ict2019.model.Tournament;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,6 +15,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
 
 import java.util.List;
 
@@ -42,6 +44,7 @@ public class ParticipantsTab extends Tab
 		initTab();
 		initTable();
 		gridPane = new GridPane();
+		editBtn.disableProperty().bind( Bindings.isEmpty( tableView.getSelectionModel().getSelectedItems()));
 
 		gridPane.add( title, 0, 0,4, 1  );
 		gridPane.add( participantsCount, 0, 1, 2, 1 );
@@ -61,8 +64,10 @@ public class ParticipantsTab extends Tab
 	private void initTab ()
 	{
 		title = new Label( "Participants of\"" + tournament.getTitle() + "\"" );
+		title.setFont( Font.font( 30 ) );
 		participantsCount = new Label();
 		tournamentSizeCount = new Label( String.valueOf( tournament.getTournamentSize() ) );
+		tournamentSizeCount.setFont( Font.font(60) );
 
 		participants = new Label( "Participants" );
 		tournamentSize = new Label( "Tournament Size" );
@@ -84,6 +89,7 @@ public class ParticipantsTab extends Tab
 		column1.setCellValueFactory( new PropertyValueFactory<>( "name" ) );
 
 		tableView.getColumns().add( column1 );
+		tableView.setMaxHeight( 150 );
 	}
 
 	public void addActions ( EventHandler<ActionEvent> evh )
@@ -99,6 +105,30 @@ public class ParticipantsTab extends Tab
 		observableList = FXCollections.observableArrayList( list );
 		tableView.setItems( observableList );
 		participantsCount.setText( String.valueOf( list.size() ) );
+		participantsCount.setFont( Font.font( 60 ) );
 	}
 
+	public Participant getSelectedParticipant(){
+		return (Participant) tableView.getSelectionModel().getSelectedItem();
+	}
+
+	public Button getAddParticipantsBtn ()
+	{
+		return addParticipantsBtn;
+	}
+
+	public Button getEditBtn ()
+	{
+		return editBtn;
+	}
+
+	public Button getRemoveBtn ()
+	{
+		return removeBtn;
+	}
+
+	public Button getFillRandomBtn ()
+	{
+		return fillRandomBtn;
+	}
 }

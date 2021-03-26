@@ -5,10 +5,16 @@
  */
 package ch.bbzsogr.ict2019.views;
 
+import javafx.scene.Node;
+import javafx.scene.control.Tab;
+
 /**
  *
  * @author varot
  */
-public class Match {
-    
+public class MatchTab extends Tab
+{
+	public MatchTab ( )
+	{
+	}
 }

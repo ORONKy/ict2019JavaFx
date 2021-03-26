@@ -99,9 +99,9 @@ public class DbConnector
 		ResultSet result;
 		List<Participant> returnValue = new ArrayList<>();
 
-		String query = "SELECT participant.Name AS name, participant.ID AS id " + "FROM participantintournament "
+		String query = "SELECT participant.Name AS name, participant.ID AS id, participant.IsTemporary AS temporary, participant.IsTeam AS team " + "FROM participantintournament "
 				+ "LEFT JOIN participant ON participant.ID = participantintournament.id "
-				+ "WHERE participantintournament.TournamentID = 1";
+				+ "WHERE participantintournament.TournamentID = "+tournamentId;
 
 		try
 		{
@@ -110,7 +110,8 @@ public class DbConnector
 			result = sqlStatement.getResultSet();
 			while ( result.next() )
 			{
-				returnValue.add( new Participant( result.getInt( "id" ), result.getString( "name" ) ) );
+				returnValue.add( new Participant( result.getInt( "id" ), result.getString( "name" ), result.getInt( "temporary" ) == 1,
+						result.getInt("team") ==1) );
 
 			}
 		}
@@ -130,6 +131,18 @@ public class DbConnector
 		preparedStatement.setInt( 2, gameId );
 		preparedStatement.setInt( 3, size );
 		preparedStatement.setInt( 4, gameStand );
+		preparedStatement.executeUpdate();
+	}
+
+	public void editParticipant (Participant participant) throws SQLException
+	{
+		String sql = "UPDATE participant SET " + "participant.Name = ?, " + "participant.IsTemporary = ?, "
+				+ "participant.IsTeam = ? " + "WHERE participant.ID = ?";
+		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		preparedStatement.setString( 1, participant.getName() );
+		preparedStatement.setInt( 2,participant.isTeam() ? 1 :0 );
+		preparedStatement.setInt( 3,participant.isTemporary() ? 1 :0 );
+		preparedStatement.setInt( 4, participant.getId() );
 		preparedStatement.executeUpdate();
 	}
 }
