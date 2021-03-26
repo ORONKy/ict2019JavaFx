@@ -128,7 +128,7 @@ public class EditParticipants {
 	}
 
 	public Participant getEditedParticipant(){
-		return new Participant( participant.getId(), nameTextField.getText(), isTeamEdit(), temporaryCheckbox.isSelected());
+		return new Participant( participant.getId(), nameTextField.getText(), isTeamEdit(), temporaryCheckbox.isSelected(), participant.isNewUser());
 	}
 
 	public boolean isTeamEdit(){
@@ -139,4 +139,6 @@ public class EditParticipants {
 	{
 		this.errorTextField.setText( message );
 	}
+
+
 }

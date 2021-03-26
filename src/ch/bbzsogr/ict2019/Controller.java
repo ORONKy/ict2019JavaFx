@@ -80,11 +80,22 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		else if ( this.editParticipants != null && source == this.editParticipants.getSaveBtn() )
 		{
-			editParticipant();
+			if ( editParticipants.getEditedParticipant().isNewUser() == false )
+			{
+				editParticipant();
+			}
+			else
+			{
+				createParticipants();
+			}
 		}
 		else if ( this.editParticipants != null && source == this.editParticipants.getCancelBtn() )
 		{
 			editParticipants.closeWindow();
+		}
+		else if ( this.participantsTab != null && source == this.participantsTab.getAddParticipantsBtn() )
+		{
+			createCreateParticipantView();
 		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
@@ -147,9 +158,41 @@ public class Controller implements EventHandler<ActionEvent>
 				return;
 			}
 			editParticipants.closeWindow();
+			participantsTab.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+			return;
 		}
 		else
 			editParticipants.setErrorTextField( "user is not valid" );
+	}
+
+	private void createParticipants ()
+	{
+		Participant participant = editParticipants.getEditedParticipant();
+		Tournament tournament = tournamentOverviewView.getTournament();
+		if ( ValidationUtil.validateUser( participant ) )
+		{
+			try
+			{
+				db.createParticipant( participant, tournament.getId() );
+			}
+			catch ( SQLException throwables )
+			{
+				editParticipants.setErrorTextField( "error while create user" );
+				return;
+			}
+			editParticipants.closeWindow();
+			participantsTab.populateTable( db.readParticipantsForTournament( tournament.getId() ) );
+			return;
+		}
+		else
+			editParticipants.setErrorTextField( "user is not valid" );
+	}
+
+	private void createCreateParticipantView ()
+	{
+		Participant participant = new Participant( true );
+		editParticipants = new EditParticipants( primaryStage, participant );
+		editParticipants.addActions( this );
 	}
 
 }

@@ -99,4 +99,8 @@ public class TournamentOverview {
 	{
 		return exportBtn;
 	}
+
+	public Tournament getTournament(){
+		return tournament;
+	}
 }
