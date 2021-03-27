@@ -97,6 +97,10 @@ public class Controller implements EventHandler<ActionEvent>
 		{
 			createCreateParticipantView();
 		}
+		else if ( this.participantsTab != null && source == this.participantsTab.getRemoveBtn() )
+		{
+			removeParticipant();
+		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
             this.view.updateLabel( this.model.getCount());
@@ -158,7 +162,8 @@ public class Controller implements EventHandler<ActionEvent>
 				return;
 			}
 			editParticipants.closeWindow();
-			participantsTab.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+			participantsTab.populateTable(
+					db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 			return;
 		}
 		else
@@ -177,7 +182,8 @@ public class Controller implements EventHandler<ActionEvent>
 				if ( dbParticipant == null )
 				{
 					db.createParticipant( participant, tournament.getId() );
-				}else
+				}
+				else
 				{
 					db.addParticipantToTournament( dbParticipant.getId(), tournament.getId() );
 				}
@@ -200,6 +206,26 @@ public class Controller implements EventHandler<ActionEvent>
 		Participant participant = new Participant( true );
 		editParticipants = new EditParticipants( primaryStage, participant );
 		editParticipants.addActions( this );
+	}
+
+	private void removeParticipant ()
+	{
+		Participant participant = participantsTab.getSelectedParticipant();
+		try
+		{
+			if ( participant.isTemporary() )
+			{
+				db.removeParticipant( participant.getId() );
+			}else
+			{
+				db.removeParticipantFromTournament( tournamentOverviewView.getTournament().getId(), participant.getId() );
+			}
+			participantsTab.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
 	}
 
 }

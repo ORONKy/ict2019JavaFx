@@ -198,4 +198,28 @@ public class DbConnector
 		}
 		return returnValue;
 	}
+
+	public void removeParticipantFromTournament ( int tournamentId, int participantId ) throws SQLException
+	{
+		String sql = "DELETE FROM participantintournament WHERE participantintournament.TournamentID = ? AND participantintournament.ParticipantID = ?";
+
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setInt( 1, tournamentId );
+		preparedStatement.setInt( 2, participantId );
+		preparedStatement.executeUpdate();
+	}
+
+	public void removeParticipant ( int participantId ) throws SQLException
+	{
+		String sqlRelation = "DELETE FROM participantintournament WHERE participantintournament.ParticipantID = ?";
+		String sqlParticipant = "DELETE FROM participant WHERE ID = ?";
+
+		PreparedStatement preparedStatement1 = conn.prepareStatement(sqlRelation);
+		preparedStatement1.setInt( 1, participantId );
+		preparedStatement1.executeUpdate();
+
+		PreparedStatement preparedStatement2 = conn.prepareStatement(sqlParticipant);
+		preparedStatement2.setInt( 1, participantId );
+		preparedStatement2.executeUpdate();
+	}
 }
