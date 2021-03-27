@@ -9,11 +9,14 @@ import ch.bbzsogr.ict2019.db.DbConnector;
 import ch.bbzsogr.ict2019.model.Game;
 import ch.bbzsogr.ict2019.model.Participant;
 import ch.bbzsogr.ict2019.model.Tournament;
+import ch.bbzsogr.ict2019.util.FillRandomUtil;
 import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.*;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -100,6 +103,10 @@ public class Controller implements EventHandler<ActionEvent>
 		else if ( this.participantsTab != null && source == this.participantsTab.getRemoveBtn() )
 		{
 			removeParticipant();
+		}
+		else if ( this.participantsTab != null && source == this.participantsTab.getFillRandomBtn() )
+		{
+			fillRandom();
 		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
@@ -216,16 +223,35 @@ public class Controller implements EventHandler<ActionEvent>
 			if ( participant.isTemporary() )
 			{
 				db.removeParticipant( participant.getId() );
-			}else
-			{
-				db.removeParticipantFromTournament( tournamentOverviewView.getTournament().getId(), participant.getId() );
 			}
-			participantsTab.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+			else
+			{
+				db.removeParticipantFromTournament( tournamentOverviewView.getTournament().getId(),
+						participant.getId() );
+			}
 		}
 		catch ( SQLException throwables )
 		{
 			throwables.printStackTrace();
 		}
+		participantsTab.populateTable(
+				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 	}
 
+	private void fillRandom ()
+	{
+		Tournament tournament = tournamentOverviewView.getTournament();
+		List<Participant> currentParticipants = db.readParticipantsForTournament( tournament.getId() );
+		List<Participant> temporaryParticipants = FillRandomUtil.createTemporaryParticipants( tournament.getTournamentSize() - currentParticipants.size() );
+		try
+		{
+			db.createAllParticipants( temporaryParticipants, tournament.getId() );
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
+		participantsTab.populateTable(
+				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+	}
 }

@@ -149,6 +149,22 @@ public class DbConnector
 		preparedStatement.executeUpdate();
 	}
 
+	public void createAllParticipants ( List<Participant> participants, int tournamentId ) throws SQLException
+	{
+		for ( Participant p : participants )
+		{
+			createParticipant( p, tournamentId );
+		}
+	}
+
+	public void addAllParticipantsToTournament ( List<Integer> participantsIds, int tournamentId ) throws SQLException
+	{
+		for ( Integer p : participantsIds )
+		{
+			addParticipantToTournament( p, tournamentId );
+		}
+	}
+
 	public void createParticipant ( Participant participant, int tournamentId ) throws SQLException
 	{
 		int participantAutoId = 0;
@@ -214,11 +230,11 @@ public class DbConnector
 		String sqlRelation = "DELETE FROM participantintournament WHERE participantintournament.ParticipantID = ?";
 		String sqlParticipant = "DELETE FROM participant WHERE ID = ?";
 
-		PreparedStatement preparedStatement1 = conn.prepareStatement(sqlRelation);
+		PreparedStatement preparedStatement1 = conn.prepareStatement( sqlRelation );
 		preparedStatement1.setInt( 1, participantId );
 		preparedStatement1.executeUpdate();
 
-		PreparedStatement preparedStatement2 = conn.prepareStatement(sqlParticipant);
+		PreparedStatement preparedStatement2 = conn.prepareStatement( sqlParticipant );
 		preparedStatement2.setInt( 1, participantId );
 		preparedStatement2.executeUpdate();
 	}
