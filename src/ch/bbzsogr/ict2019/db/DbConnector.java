@@ -20,21 +20,13 @@ public class DbConnector
 {
 	private Connection conn;
 
-	public DbConnector ()
+	public DbConnector () throws SQLException
 	{
 		String baseurl = "jdbc:mysql://localhost/";
 		String user = "root";
 		String password = "";
 
-		try
-		{
-			conn = DriverManager.getConnection( baseurl + "ictskills", user, password );
-		}
-		catch ( Exception e )
-		{
-			System.err.println( e );
-			System.exit( 0 );
-		}
+		conn = DriverManager.getConnection( baseurl + "ictskills", user, password );
 	}
 
 	public List<Tournament> readTournament ()

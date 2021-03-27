@@ -41,9 +41,17 @@ public class Controller implements EventHandler<ActionEvent>
 	public Controller ( Stage primaryStage )
 	{
 		this.primaryStage = primaryStage;
-		db = new DbConnector();
+		try
+		{
+			db = new DbConnector();
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+			Dialogs.createErrorAlert( "Db was not found. Start the db and restart the program" );
+			System.exit( -1 );
+		}
 		createTournamentListView();
-		db = new DbConnector();
 	}
 
 	private void createTournamentListView ()
@@ -210,9 +218,15 @@ public class Controller implements EventHandler<ActionEvent>
 
 	private void createCreateParticipantView ()
 	{
-		Participant participant = new Participant( true );
-		editParticipants = new EditParticipants( primaryStage, participant );
-		editParticipants.addActions( this );
+		if ( tournamentOverviewView.getTournament().getTournamentSize() > db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size() )
+		{
+			Participant participant = new Participant( true );
+			editParticipants = new EditParticipants( primaryStage, participant );
+			editParticipants.addActions( this );
+		}else {
+			Dialogs.createWarningAlert( "Tournament is full", "Cant add Participant" );
+		}
+
 	}
 
 	private void removeParticipant ()
@@ -232,6 +246,7 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		catch ( SQLException throwables )
 		{
+			Dialogs.createErrorAlert( "Error while remove participant!!!\nError occurred while execute query" );
 			throwables.printStackTrace();
 		}
 		participantsTab.populateTable(
@@ -249,7 +264,8 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		catch ( SQLException throwables )
 		{
-			throwables.printStackTrace();
+
+			Dialogs.createErrorAlert( "Error while fill the tournament with random participants!!!\nError occurred while execute query" );
 		}
 		participantsTab.populateTable(
 				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
