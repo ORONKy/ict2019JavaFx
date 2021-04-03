@@ -6,6 +6,7 @@
 package ch.bbzsogr.ict2019.db;
 
 import ch.bbzsogr.ict2019.model.Game;
+import ch.bbzsogr.ict2019.model.Match;
 import ch.bbzsogr.ict2019.model.Participant;
 import ch.bbzsogr.ict2019.model.Tournament;
 
@@ -229,5 +230,25 @@ public class DbConnector
 		PreparedStatement preparedStatement2 = conn.prepareStatement( sqlParticipant );
 		preparedStatement2.setInt( 1, participantId );
 		preparedStatement2.executeUpdate();
+	}
+
+	public void addAllMatches(int tournamentId, List<Match> matches, int stage) throws SQLException
+	{
+		for ( int i = 0; i < matches.size(); i++ )
+		{
+			addMatch( tournamentId, matches.get(i), stage, i );
+		}
+	}
+
+	public void addMatch ( int tournamentId, Match match, int stage, int order) throws SQLException
+	{
+		String sql = "INSERT INTO `match`(TournamentID, Participant1ID, Participant2ID, Stage, `Order`, WinnerParticipantID) VALUE (?,?,?,?,?,?)";
+
+		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		preparedStatement.setInt(1, tournamentId);
+		preparedStatement.setInt( 2, match.getParticipant1().getId() );
+		preparedStatement.setInt( 3, match.getParticipant2().getId());
+		preparedStatement.setInt( 4, stage );
+		preparedStatement.setInt( 5, order );
 	}
 }

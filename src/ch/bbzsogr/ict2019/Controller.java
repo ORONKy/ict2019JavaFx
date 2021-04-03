@@ -7,16 +7,17 @@ package ch.bbzsogr.ict2019;
 
 import ch.bbzsogr.ict2019.db.DbConnector;
 import ch.bbzsogr.ict2019.model.Game;
+import ch.bbzsogr.ict2019.model.Match;
 import ch.bbzsogr.ict2019.model.Participant;
 import ch.bbzsogr.ict2019.model.Tournament;
 import ch.bbzsogr.ict2019.util.FillRandomUtil;
+import ch.bbzsogr.ict2019.util.MatchesUtil;
 import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.*;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -37,6 +38,7 @@ public class Controller implements EventHandler<ActionEvent>
 	private DbConnector db;
 	private ParticipantsTab participantsTab;
 	private EditParticipants editParticipants;
+	private MatchTab matchTab;
 
 	public Controller ( Stage primaryStage )
 	{
@@ -115,6 +117,10 @@ public class Controller implements EventHandler<ActionEvent>
 		else if ( this.participantsTab != null && source == this.participantsTab.getFillRandomBtn() )
 		{
 			fillRandom();
+		}
+		else if ( this.matchTab != null && source == this.matchTab.getStartTournament())
+		{
+
 		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
@@ -269,5 +275,13 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		participantsTab.populateTable(
 				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+	}
+
+	private void startTournament()
+	{
+		Tournament tournament = tournamentOverviewView.getTournament();
+		List<Participant> participants = db.readParticipantsForTournament( tournament.getId() );
+		List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1);
+
 	}
 }

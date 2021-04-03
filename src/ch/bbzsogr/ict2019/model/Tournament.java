@@ -15,6 +15,7 @@ public class Tournament {
     private String game;
     private String winner;
     private int tournamentSize;
+    private int tournamentState;
 
     public Tournament ( int id, String title, String game, String winner, int tournamentSize )
     {
@@ -25,6 +26,15 @@ public class Tournament {
         this.tournamentSize = tournamentSize;
     }
 
+    public Tournament ( int id, String title, String game, String winner, int tournamentSize, int tournamentState )
+    {
+        this.id = id;
+        this.title = title;
+        this.game = game;
+        this.winner = winner;
+        this.tournamentSize = tournamentSize;
+        this.tournamentState = tournamentState;
+    }
 
     public String getTitle() {
         return title;
@@ -48,5 +58,9 @@ public class Tournament {
         if(winner != null)
         return winner;
         return "undecided";
+    }
+
+    public int getTournamentState(){
+        return tournamentState;
     }
 }
