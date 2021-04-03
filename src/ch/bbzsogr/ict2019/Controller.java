@@ -6,18 +6,16 @@
 package ch.bbzsogr.ict2019;
 
 import ch.bbzsogr.ict2019.db.DbConnector;
-import ch.bbzsogr.ict2019.model.Game;
-import ch.bbzsogr.ict2019.model.Match;
-import ch.bbzsogr.ict2019.model.Participant;
-import ch.bbzsogr.ict2019.model.Tournament;
+import ch.bbzsogr.ict2019.model.*;
 import ch.bbzsogr.ict2019.util.FillRandomUtil;
 import ch.bbzsogr.ict2019.util.MatchesUtil;
 import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.*;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -39,6 +37,8 @@ public class Controller implements EventHandler<ActionEvent>
 	private ParticipantsTab participantsTab;
 	private EditParticipants editParticipants;
 	private MatchTab matchTab;
+	private Map<Integer, StageTab> stagesTabs;
+
 
 	public Controller ( Stage primaryStage )
 	{
@@ -120,7 +120,7 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		else if ( this.matchTab != null && source == this.matchTab.getStartTournament())
 		{
-
+			startTournament();
 		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
@@ -134,7 +134,9 @@ public class Controller implements EventHandler<ActionEvent>
 		participantsTab = new ParticipantsTab( selectedTournament );
 		participantsTab.addActions( this );
 		participantsTab.populateTable( db.readParticipantsForTournament( selectedTournament.getId() ) );
-		tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament, participantsTab );
+		matchTab = new MatchTab();
+		matchTab.addActions( this );
+		tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament, participantsTab, matchTab );
 	}
 
 	private void createNewTournament ()
@@ -282,6 +284,21 @@ public class Controller implements EventHandler<ActionEvent>
 		Tournament tournament = tournamentOverviewView.getTournament();
 		List<Participant> participants = db.readParticipantsForTournament( tournament.getId() );
 		List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1);
-
+		List<Match> dbMatches = null;
+		try
+		{
+			db.addAllMatches( tournament.getId(), matches, 1);
+			dbMatches = db.readMatches( tournament.getId(),1);
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
+		TournamentStage tournamentStage = new TournamentStage( dbMatches, 1, false, dbMatches.size() );
+		StageTab stage1 = new StageTab( tournamentStage );
+		stage1.setText( "Stage 1" );
+		stagesTabs = new HashMap<>();
+		stagesTabs.put( 1, stage1 );
+		matchTab.createPrimaryTab( stagesTabs.get( 1 ) );
 	}
 }

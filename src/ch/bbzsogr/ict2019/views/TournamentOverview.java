@@ -40,10 +40,11 @@ public class TournamentOverview {
 
 	private final String WINDOW_TITLE = "Tournament Overview";
 
-	public TournamentOverview ( Stage primaryStage, Tournament tournament, Tab participantTab)
+	public TournamentOverview ( Stage primaryStage, Tournament tournament, Tab participantTab, Tab matchesTab)
 	{
 		this.tournament = tournament;
 		this.participantTab = participantTab;
+		this.matchesTab = matchesTab;
 
 		initWindow();
 		initTabPane();
@@ -83,6 +84,8 @@ public class TournamentOverview {
 		tabPane = new TabPane();
 		tabPane.getTabs().add( participantTab );
 		participantTab.setText( "participant" );
+		tabPane.getTabs().add( matchesTab );
+		matchesTab.setText( "Matches" );
 
 		tabPane.setTabClosingPolicy( TabPane.TabClosingPolicy.UNAVAILABLE);
 

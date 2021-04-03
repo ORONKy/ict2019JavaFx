@@ -6,11 +6,14 @@
 package ch.bbzsogr.ict2019.views;
 
 import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,7 +31,7 @@ public class MatchTab extends Tab
 		setClosable( false );
 		readyForStart = false;
 		initStartTab();
-
+		setContent( startTournament );
 	}
 
 	private void initStartTab ()
@@ -68,5 +71,10 @@ public class MatchTab extends Tab
 	public Button getStartTournament ()
 	{
 		return startTournament;
+	}
+
+	public void addActions ( EventHandler<ActionEvent> evh )
+	{
+		startTournament.setOnAction( evh );
 	}
 }
