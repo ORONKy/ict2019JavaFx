@@ -36,4 +36,9 @@ public class TournamentStage
 	{
 		return participantsCount;
 	}
+
+	public void setMatches ( List<Match> matches )
+	{
+		this.matches = matches;
+	}
 }

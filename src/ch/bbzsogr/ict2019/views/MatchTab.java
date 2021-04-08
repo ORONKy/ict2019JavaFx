@@ -45,6 +45,7 @@ public class MatchTab extends Tab
 		tabPane = new TabPane();
 		started = true;
 		tabPane.getTabs().add( tab );
+		setContent( tabPane );
 	}
 
 	public boolean isStarted ()

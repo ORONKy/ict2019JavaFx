@@ -287,7 +287,7 @@ public class DbConnector
 				Participant winner =
 						resultSet.getInt( "winner" ) == 0 ? null : resultSet.getInt( "winner" ) == p1.getId() ? p1 : p2;
 				returnValue.add( new Match( resultSet.getInt( "id" ), resultSet.getInt( "tid" ), p1, p2,
-						resultSet.getShort( "stage" ), resultSet.getInt( "order" ), winner) );
+						resultSet.getShort( "stage" ), resultSet.getInt( "order" ), winner ) );
 			}
 		}
 		catch ( SQLException throwables )
@@ -295,5 +295,31 @@ public class DbConnector
 			throwables.printStackTrace();
 		}
 		return returnValue;
+	}
+
+	public int readTournamentState ( int tournamentId ) throws SQLException
+	{
+		ResultSet resultSet;
+		PreparedStatement preparedStatement;
+
+		String sql = "Select TournamentState as state " + "From tournament " + "WHERE ID = ?";
+		preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setInt( 1, tournamentId );
+		preparedStatement.executeQuery();
+		resultSet = preparedStatement.getResultSet();
+		if ( resultSet.next() )
+		{
+			return resultSet.getInt( "state" );
+		}
+		return 0;
+	}
+
+	public void updateTournamentState ( int tournamentId, int state ) throws SQLException
+	{
+		String sql = "UPDATE tournament SET TournamentState = ? " + "WHERE ID = ? ";
+		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		preparedStatement.setInt( 1, state );
+		preparedStatement.setInt( 2, tournamentId );
+		preparedStatement.executeUpdate();
 	}
 }

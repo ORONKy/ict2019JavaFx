@@ -1,34 +1,117 @@
 package ch.bbzsogr.ict2019.views;
 
+import ch.bbzsogr.ict2019.model.Match;
 import ch.bbzsogr.ict2019.model.TournamentStage;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StageTab extends Tab
 {
 	private TournamentStage tournamentStage;
 	private List<GridPane> matches;
-	private HBox matchesHBox;
+	private VBox matchesVBox;
+	private HBox infoBox;
+
+	private Label title;
+	private Label matchesCount;
+	private Label participantsCount;
 
 	public StageTab ( TournamentStage tournamentStage )
 	{
+		matches = new ArrayList<>();
 		this.tournamentStage = tournamentStage;
+		initTab();
+		matchesVBox = new VBox();
+		infoBox = new HBox();
+		infoBox.getChildren().add( title );
+		infoBox.getChildren().add( matchesCount );
+		infoBox.getChildren().add( participantsCount );
+		infoBox.setSpacing( 30 );
+		matchesVBox.getChildren().add( infoBox );
+		matchesVBox.setSpacing( 40 );
+		setContent( matchesVBox );
+		fillMatchGridPaneList( tournamentStage.getMatches() );
+		generateMatches(  );
+		setClosable( false );
 	}
 
 	private void initTab ()
 	{
+		title = new Label("Stage "+tournamentStage.getStageNr());
+		title.setFont( Font.font( 40 ) );
+		matchesCount = new Label(tournamentStage.getMatches().size()+" Matches");
+		matchesCount.setFont( Font.font( 20 ) );
+		matchesCount.setAlignment( Pos.BASELINE_CENTER );
+		participantsCount = new Label( tournamentStage.getParticipantsCount() + " Participants");
+		participantsCount.setFont( Font.font( 20 ) );
+		participantsCount.setAlignment( Pos.BOTTOM_CENTER );
 	}
 
-	private void generateMatches ()
+	public void generateMatches ()
 	{
-
+		for ( GridPane pane : matches )
+		{
+			matchesVBox.getChildren().add( pane );
+		}
 	}
 
-	private void fillMatchGridPaneList ()
+	private void fillMatchGridPaneList (List<Match> matchList)
 	{
+		List<Match> returnValue = new ArrayList<>();
+		for ( Match match : matchList )
+		{
+			GridPane matchPane = new GridPane();
+			Label vsLabel = new Label("VS");
+			Label p1Name = new Label(match.getParticipant1().getName());
+			Label p2Name = new Label(match.getParticipant2().getName());
+			HBox p1Box = new HBox();
+			HBox p2Box = new HBox();
+			Button p1Win = new Button("W");
+			p1Win.setStyle("-fx-background-color: #86d615");
+			Button p1Los = new Button("L");
+			p1Los.setStyle("-fx-background-color: #e80000");
+			Button p2Win = new Button("W");
+			p2Win.setStyle("-fx-background-color: #86d615");
+			Button p2Los = new Button( "L");
+			p2Los.setStyle("-fx-background-color: #e80000");
+			p1Box.getChildren().add( p1Win );
+			p1Box.getChildren().add( p1Los );
+			p2Box.getChildren().add( p2Win );
+			p2Box.getChildren().add( p2Los );
+			p1Box.setSpacing( 5 );
+			p2Box.setSpacing( 5 );
 
+			matchPane.add( p1Box, 0, 0 );
+			matchPane.add( p2Box,2,0 );
+			matchPane.add( p1Name,0, 1 );
+			matchPane.add( vsLabel,1,1 );
+			matchPane.add( p2Name,2,1 );
+			matchPane.setGridLinesVisible(true);
+			matchPane.setHgap( 15 );
+			matchPane.setHgap( 5 );
+			matches.add( matchPane );
+			match.setParticipant1los( p1Los );
+			match.setParticipant2los( p2Los );
+			match.setParticipant1win( p1Win );
+			match.setParticipant2win( p2Win );
+		}
+	}
+
+	public void refreshMatchesCount(){
+		matchesCount.setText( tournamentStage.getMatches().size()+" Matches" );
+	}
+
+	public TournamentStage getTournamentStage ()
+	{
+		return tournamentStage;
 	}
 }

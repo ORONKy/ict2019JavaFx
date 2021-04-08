@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -38,7 +39,6 @@ public class Controller implements EventHandler<ActionEvent>
 	private EditParticipants editParticipants;
 	private MatchTab matchTab;
 	private Map<Integer, StageTab> stagesTabs;
-
 
 	public Controller ( Stage primaryStage )
 	{
@@ -118,7 +118,7 @@ public class Controller implements EventHandler<ActionEvent>
 		{
 			fillRandom();
 		}
-		else if ( this.matchTab != null && source == this.matchTab.getStartTournament())
+		else if ( this.matchTab != null && source == this.matchTab.getStartTournament() )
 		{
 			startTournament();
 		}
@@ -126,6 +126,28 @@ public class Controller implements EventHandler<ActionEvent>
             this.model.increase();
             this.view.updateLabel( this.model.getCount());
         }*/
+	}
+
+	private void handleMatchesButton ( Button source )
+	{
+		List<Match> allMatches = (List<Match>) stagesTabs.entrySet().stream()
+				.map( map -> map.getValue().getTournamentStage().getMatches() );
+		for ( Match match : allMatches )
+		{
+			if ( match.getParticipant1los() == source )
+			{
+
+			}else if ( match.getParticipant1win() == source )
+			{
+
+			}else if ( match.getParticipant2los() == source )
+			{
+
+			}else if ( match.getParticipant2win() == source )
+			{
+
+			}
+		}
 	}
 
 	private void createTournamentOverview ()
@@ -136,7 +158,29 @@ public class Controller implements EventHandler<ActionEvent>
 		participantsTab.populateTable( db.readParticipantsForTournament( selectedTournament.getId() ) );
 		matchTab = new MatchTab();
 		matchTab.addActions( this );
+		try
+		{
+			int stage = db.readTournamentState( selectedTournament.getId() );
+			if ( stage != 0 )
+			{
+				for ( int i = 0; i < stage; i++ )
+				{
+					List<Match> matches = db.readMatches( selectedTournament.getId(), i + 1 );
+					TournamentStage stageObj = new TournamentStage( matches, i + 1, i + 1 != stage, 0 );
+					StageTab stageTab = new StageTab( stageObj );
+					matchTab.createPrimaryTab( stageTab );
+					stageTab.setText( "stage " + i + 1 );
+					stagesTabs.put( i + 1, stageTab );
+				}
+			}
+
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
 		tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament, participantsTab, matchTab );
+
 	}
 
 	private void createNewTournament ()
@@ -226,12 +270,15 @@ public class Controller implements EventHandler<ActionEvent>
 
 	private void createCreateParticipantView ()
 	{
-		if ( tournamentOverviewView.getTournament().getTournamentSize() > db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size() )
+		if ( tournamentOverviewView.getTournament().getTournamentSize() > db
+				.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size() )
 		{
 			Participant participant = new Participant( true );
 			editParticipants = new EditParticipants( primaryStage, participant );
 			editParticipants.addActions( this );
-		}else {
+		}
+		else
+		{
 			Dialogs.createWarningAlert( "Tournament is full", "Cant add Participant" );
 		}
 
@@ -257,15 +304,16 @@ public class Controller implements EventHandler<ActionEvent>
 			Dialogs.createErrorAlert( "Error while remove participant!!!\nError occurred while execute query" );
 			throwables.printStackTrace();
 		}
-		participantsTab.populateTable(
-				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+		participantsTab
+				.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 	}
 
 	private void fillRandom ()
 	{
 		Tournament tournament = tournamentOverviewView.getTournament();
 		List<Participant> currentParticipants = db.readParticipantsForTournament( tournament.getId() );
-		List<Participant> temporaryParticipants = FillRandomUtil.createTemporaryParticipants( tournament.getTournamentSize() - currentParticipants.size() );
+		List<Participant> temporaryParticipants = FillRandomUtil
+				.createTemporaryParticipants( tournament.getTournamentSize() - currentParticipants.size() );
 		try
 		{
 			db.createAllParticipants( temporaryParticipants, tournament.getId() );
@@ -273,22 +321,24 @@ public class Controller implements EventHandler<ActionEvent>
 		catch ( SQLException throwables )
 		{
 
-			Dialogs.createErrorAlert( "Error while fill the tournament with random participants!!!\nError occurred while execute query" );
+			Dialogs.createErrorAlert(
+					"Error while fill the tournament with random participants!!!\nError occurred while execute query" );
 		}
-		participantsTab.populateTable(
-				db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+		participantsTab
+				.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 	}
 
-	private void startTournament()
+	private void startTournament ()
 	{
 		Tournament tournament = tournamentOverviewView.getTournament();
 		List<Participant> participants = db.readParticipantsForTournament( tournament.getId() );
-		List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1);
+		List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1 );
 		List<Match> dbMatches = null;
 		try
 		{
-			db.addAllMatches( tournament.getId(), matches, 1);
-			dbMatches = db.readMatches( tournament.getId(),1);
+			db.addAllMatches( tournament.getId(), matches, 1 );
+			dbMatches = db.readMatches( tournament.getId(), 1 );
+			db.updateTournamentState( tournament.getId(), 1 );
 		}
 		catch ( SQLException throwables )
 		{
