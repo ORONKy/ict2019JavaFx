@@ -42,6 +42,7 @@ public class Controller implements EventHandler<ActionEvent>
 
 	public Controller ( Stage primaryStage )
 	{
+		stagesTabs = new HashMap<>();
 		this.primaryStage = primaryStage;
 		try
 		{
@@ -122,6 +123,10 @@ public class Controller implements EventHandler<ActionEvent>
 		{
 			startTournament();
 		}
+		else
+		{
+			handleMatchesButton( source );
+		}
       /*  if ( source == this.view.getCountButton() ) {
             this.model.increase();
             this.view.updateLabel( this.model.getCount());
@@ -130,23 +135,49 @@ public class Controller implements EventHandler<ActionEvent>
 
 	private void handleMatchesButton ( Button source )
 	{
-		List<Match> allMatches = (List<Match>) stagesTabs.entrySet().stream()
-				.map( map -> map.getValue().getTournamentStage().getMatches() );
+		if ( stagesTabs == null )
+			return;
+		List<Match> allMatches = stagesTabs.entrySet().stream()
+				.map( map -> map.getValue().getTournamentStage().getMatches() ).collect( Collectors.toList()).get( 0 );
 		for ( Match match : allMatches )
 		{
 			if ( match.getParticipant1los() == source )
 			{
-
-			}else if ( match.getParticipant1win() == source )
-			{
-
-			}else if ( match.getParticipant2los() == source )
-			{
-
-			}else if ( match.getParticipant2win() == source )
-			{
-
+				setMatchWinner( match.getStageNr() ,match.getParticipant2(), match.getId() );
 			}
+			else if ( match.getParticipant1win() == source )
+			{
+				setMatchWinner( match.getStageNr() ,match.getParticipant1(), match.getId() );
+			}
+			else if ( match.getParticipant2los() == source )
+			{
+				setMatchWinner( match.getStageNr() ,match.getParticipant1(), match.getId() );
+			}
+			else if ( match.getParticipant2win() == source )
+			{
+				setMatchWinner( match.getStageNr() ,match.getParticipant2(), match.getId() );
+			}
+		}
+	}
+
+	private void setMatchWinner(int stage, Participant winnerParticipant, int matchId)
+	{
+		try
+		{
+			db.setMatchWinner( winnerParticipant.getId(), matchId );
+			Tournament selectedTournament = tournamentListView.getSelectedTournament();
+			List<Match> dbMatches = db.readMatches( selectedTournament.getId(), stage );
+			boolean stageFinished = dbMatches.stream().filter( p -> p.getWinnerParticipantId() != null ).findFirst().isEmpty();
+			stagesTabs.get( stage ).refreshStage( new TournamentStage( dbMatches, stage, stageFinished, dbMatches.size() ) );
+			if ( stageFinished )
+			{
+
+				createAndAddStageTabToMatchTab( selectedTournament.getId(), stage+1, false );
+			}
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
 		}
 	}
 
@@ -165,12 +196,7 @@ public class Controller implements EventHandler<ActionEvent>
 			{
 				for ( int i = 0; i < stage; i++ )
 				{
-					List<Match> matches = db.readMatches( selectedTournament.getId(), i + 1 );
-					TournamentStage stageObj = new TournamentStage( matches, i + 1, i + 1 != stage, 0 );
-					StageTab stageTab = new StageTab( stageObj );
-					matchTab.createPrimaryTab( stageTab );
-					stageTab.setText( "stage " + i + 1 );
-					stagesTabs.put( i + 1, stageTab );
+					createAndAddStageTabToMatchTab( selectedTournament.getId(), i+1, i+1 == stage );
 				}
 			}
 
@@ -181,6 +207,14 @@ public class Controller implements EventHandler<ActionEvent>
 		}
 		tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament, participantsTab, matchTab );
 
+	}
+
+	private void createAndAddStageTabToMatchTab(int tournamentId, int stageId, boolean isFinished)
+	{
+		List<Match> matches = db.readMatches( tournamentId, stageId );
+		StageTab stageTab = MatchesUtil.createStageTab( stageId, matches, isFinished );
+		matchTab.createPrimaryTab( stageTab );
+		stagesTabs.put( stageId, stageTab );
 	}
 
 	private void createNewTournament ()
@@ -337,8 +371,8 @@ public class Controller implements EventHandler<ActionEvent>
 		try
 		{
 			db.addAllMatches( tournament.getId(), matches, 1 );
-			dbMatches = db.readMatches( tournament.getId(), 1 );
 			db.updateTournamentState( tournament.getId(), 1 );
+			dbMatches = db.readMatches( tournament.getId(), 1 );
 		}
 		catch ( SQLException throwables )
 		{
@@ -347,8 +381,10 @@ public class Controller implements EventHandler<ActionEvent>
 		TournamentStage tournamentStage = new TournamentStage( dbMatches, 1, false, dbMatches.size() );
 		StageTab stage1 = new StageTab( tournamentStage );
 		stage1.setText( "Stage 1" );
+		stage1.addActions( this );
 		stagesTabs = new HashMap<>();
 		stagesTabs.put( 1, stage1 );
 		matchTab.createPrimaryTab( stagesTabs.get( 1 ) );
 	}
+
 }

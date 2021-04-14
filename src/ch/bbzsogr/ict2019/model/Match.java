@@ -102,4 +102,9 @@ public class Match
 	{
 		this.participant2los = participant2los;
 	}
+
+	public void setWinnerParticipantId ( Participant winnerParticipantId )
+	{
+		this.winnerParticipantId = winnerParticipantId;
+	}
 }

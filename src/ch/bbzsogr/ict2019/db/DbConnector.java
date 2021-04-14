@@ -322,4 +322,13 @@ public class DbConnector
 		preparedStatement.setInt( 2, tournamentId );
 		preparedStatement.executeUpdate();
 	}
+
+	public void setMatchWinner (int winnerParticipant, int matchId) throws SQLException
+	{
+		String sql = "UPDATE `match` SET `match`.WinnerParticipantID = ? " + "WHERE ID = ?";
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setInt( 1, winnerParticipant );
+		preparedStatement.setInt( 2, matchId );
+		preparedStatement.executeUpdate();
+	}
 }

@@ -106,4 +106,9 @@ public class TournamentOverview {
 	public Tournament getTournament(){
 		return tournament;
 	}
+
+	public void setMatchesTab ( Tab matchesTab )
+	{
+		this.matchesTab = matchesTab;
+	}
 }

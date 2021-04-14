@@ -2,6 +2,8 @@ package ch.bbzsogr.ict2019.util;
 
 import ch.bbzsogr.ict2019.model.Match;
 import ch.bbzsogr.ict2019.model.Participant;
+import ch.bbzsogr.ict2019.model.TournamentStage;
+import ch.bbzsogr.ict2019.views.StageTab;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,5 +42,13 @@ public class MatchesUtil
 			return obj;
 		}
 		return null;
+	}
+
+	public static StageTab createStageTab(int stage, List<Match> matches, boolean finished)
+	{
+		TournamentStage stageObj = new TournamentStage( matches, stage, finished, 5 );
+		StageTab stageTab = new StageTab( stageObj );
+		stageTab.setText( "stage " + stage );
+		return stageTab;
 	}
 }
