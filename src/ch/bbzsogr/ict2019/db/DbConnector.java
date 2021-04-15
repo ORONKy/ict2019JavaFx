@@ -317,18 +317,52 @@ public class DbConnector
 	public void updateTournamentState ( int tournamentId, int state ) throws SQLException
 	{
 		String sql = "UPDATE tournament SET TournamentState = ? " + "WHERE ID = ? ";
-		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
 		preparedStatement.setInt( 1, state );
 		preparedStatement.setInt( 2, tournamentId );
 		preparedStatement.executeUpdate();
 	}
 
-	public void setMatchWinner (int winnerParticipant, int matchId) throws SQLException
+	public void setMatchWinner ( int winnerParticipant, int matchId ) throws SQLException
 	{
 		String sql = "UPDATE `match` SET `match`.WinnerParticipantID = ? " + "WHERE ID = ?";
 		PreparedStatement preparedStatement = conn.prepareStatement( sql );
 		preparedStatement.setInt( 1, winnerParticipant );
 		preparedStatement.setInt( 2, matchId );
+		preparedStatement.executeUpdate();
+	}
+
+	public List<Participant> readStageWinner ( int tournamentId, int stage ) throws SQLException
+	{
+		List<Participant> returnValue = new ArrayList<>();
+
+		String sql = "SELECT p.ID as id, p.Name as name, p.IsTemporary as temporary, p.IsTeam as team from `match` m "
+				+ "JOIN participant p on p.ID = m.WinnerParticipantID " + "WHERE m.Stage = ? AND m.TournamentID = ?";
+
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setInt( 1, stage );
+		preparedStatement.setInt( 2, tournamentId );
+
+		preparedStatement.executeQuery();
+
+		ResultSet resultSet = preparedStatement.getResultSet();
+
+		while ( resultSet.next() )
+		{
+			returnValue.add( new Participant( resultSet.getInt( "id" ), resultSet.getString( "name" ),
+					resultSet.getInt( "temporary" ) == 1, resultSet.getInt( "team" ) == 1 ) );
+		}
+
+		return returnValue;
+	}
+
+	public void writeMatchWinner(int winnerParticipantId, int tournamentId) throws SQLException
+	{
+		String sql = "UPDATE tournament SET tournament.WinnerParticipantID = ? WHERE tournament.ID = ?";
+
+		PreparedStatement preparedStatement = conn.prepareStatement(sql);
+		preparedStatement.setInt( 1, winnerParticipantId );
+		preparedStatement.setInt( 2, tournamentId );
 		preparedStatement.executeUpdate();
 	}
 }

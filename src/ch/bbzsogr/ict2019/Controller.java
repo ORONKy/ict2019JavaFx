@@ -167,12 +167,21 @@ public class Controller implements EventHandler<ActionEvent>
 			db.setMatchWinner( winnerParticipant.getId(), matchId );
 			Tournament selectedTournament = tournamentListView.getSelectedTournament();
 			List<Match> dbMatches = db.readMatches( selectedTournament.getId(), stage );
-			boolean stageFinished = dbMatches.stream().filter( p -> p.getWinnerParticipantId() != null ).findFirst().isEmpty();
+			boolean stageFinished = dbMatches.stream().filter( p -> p.getWinnerParticipantId() != null ).count() > 0;
 			stagesTabs.get( stage ).refreshStage( new TournamentStage( dbMatches, stage, stageFinished, dbMatches.size() ) );
+			stagesTabs.get( stage ).addActions( this );
 			if ( stageFinished )
 			{
-
-				createAndAddStageTabToMatchTab( selectedTournament.getId(), stage+1, false );
+				List<Participant> stageWinner = db.readStageWinner( selectedTournament.getId(), stage);
+				if ( stageWinner.size() > 1 )
+				{
+					List<Match> newMatches = MatchesUtil.createMatches( stageWinner, selectedTournament.getId(), stage);
+					createAndAddStageTabToMatchTab(  stage+1, false, newMatches );
+				}else
+				{
+					if ( !stageWinner.isEmpty() )
+					db.writeMatchWinner( stageWinner.get( 0 ).getId(),selectedTournament.getId()	 );
+				}
 			}
 		}
 		catch ( SQLException throwables )
@@ -209,13 +218,34 @@ public class Controller implements EventHandler<ActionEvent>
 
 	}
 
+	/**
+	 * Create an Stage tab and add it to the Matches Tab
+	 * Takes all Matches from a stage
+	 * @param tournamentId the id of the tournament
+	 * @param stageId the stage nr
+	 * @param isFinished true if the stage is finished
+	 */
 	private void createAndAddStageTabToMatchTab(int tournamentId, int stageId, boolean isFinished)
 	{
-		List<Match> matches = db.readMatches( tournamentId, stageId );
-		StageTab stageTab = MatchesUtil.createStageTab( stageId, matches, isFinished );
-		matchTab.createPrimaryTab( stageTab );
-		stagesTabs.put( stageId, stageTab );
+		createAndAddStageTabToMatchTab( stageId, isFinished, db.readMatches( tournamentId, stageId ) );
+
 	}
+
+	/**
+	 * Create an Staage tab and add it to the Matches Tab
+	 * Takes custom Matches
+	 * @param stageId the Stage nr
+	 * @param isFinished true if the stage is finished
+	 * @param matches the matches which are part of the stage
+	 */
+	private void createAndAddStageTabToMatchTab(int stageId, boolean isFinished, List<Match> matches)
+	{
+		StageTab stageTab = MatchesUtil.createStageTab( stageId, matches, isFinished );
+		matchTab.addTab( stageTab );
+		stagesTabs.put( stageId, stageTab );
+		stageTab.addActions( this );
+	}
+
 
 	private void createNewTournament ()
 	{
