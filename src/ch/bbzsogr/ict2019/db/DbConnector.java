@@ -365,4 +365,14 @@ public class DbConnector
 		preparedStatement.setInt( 2, tournamentId );
 		preparedStatement.executeUpdate();
 	}
+
+	public void writeTournamentStage(int tournamentId, int stage) throws SQLException
+	{
+		String sql = "UPDATE tournament SET TournamentState = ? WHERE ID = ?";
+
+		PreparedStatement preparedStatement = conn.prepareStatement( sql );
+		preparedStatement.setInt( 1, stage );
+		preparedStatement.setInt( 2, tournamentId );
+		preparedStatement.executeUpdate();
+	}
 }

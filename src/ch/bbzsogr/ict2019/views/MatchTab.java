@@ -66,6 +66,11 @@ public class MatchTab extends Tab
 		if ( tabPane != null )
 		{
 			tabPane.getTabs().add( tab );
+		}else
+		{
+			tabPane = new TabPane();
+			tabPane.getTabs().add( tab );
+			setContent( tabPane );
 		}
 	}
 

@@ -138,7 +138,7 @@ public class Controller implements EventHandler<ActionEvent>
 		if ( stagesTabs == null )
 			return;
 		List<Match> allMatches = stagesTabs.entrySet().stream()
-				.map( map -> map.getValue().getTournamentStage().getMatches() ).collect( Collectors.toList()).get( 0 );
+				.map( map -> map.getValue().getTournamentStage().getMatches() ).flatMap( List::stream ).collect( Collectors.toList() );
 		for ( Match match : allMatches )
 		{
 			if ( match.getParticipant1los() == source )
@@ -176,7 +176,10 @@ public class Controller implements EventHandler<ActionEvent>
 				if ( stageWinner.size() > 1 )
 				{
 					List<Match> newMatches = MatchesUtil.createMatches( stageWinner, selectedTournament.getId(), stage);
-					createAndAddStageTabToMatchTab(  stage+1, false, newMatches );
+					db.addAllMatches( selectedTournament.getId(), newMatches, stage +1 );
+					db.writeTournamentStage( selectedTournament.getId(), stage+1 );
+					createAndAddStageTabToMatchTab( selectedTournament.getId(), stage+1, false);
+
 				}else
 				{
 					if ( !stageWinner.isEmpty() )
@@ -228,7 +231,6 @@ public class Controller implements EventHandler<ActionEvent>
 	private void createAndAddStageTabToMatchTab(int tournamentId, int stageId, boolean isFinished)
 	{
 		createAndAddStageTabToMatchTab( stageId, isFinished, db.readMatches( tournamentId, stageId ) );
-
 	}
 
 	/**
