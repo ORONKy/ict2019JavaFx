@@ -15,6 +15,7 @@ import ch.bbzsogr.ict2019.views.*;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,13 +178,13 @@ public class Controller implements EventHandler<ActionEvent>
 			List<Match> dbMatches = db.readMatches( selectedTournament.getId(), stage );
 			boolean stageFinished = dbMatches.stream().filter( p -> p.getWinnerParticipantId() != null ).count() > 0;
 			stagesTabs.get( stage )
-					.refreshStage( new TournamentStage( dbMatches, stage, stageFinished, dbMatches.size() ) );
+					.refreshStage( new TournamentStage( dbMatches, stage, stageFinished, MatchesUtil.getTournamentParticipants( dbMatches) ) );
 			stagesTabs.get( stage ).addActions( this );
 			if ( stageFinished )
 			{
 				List<Participant> stageWinner = db.readStageWinner( selectedTournament.getId(), stage );
 				List<Match> stageMatches = db.readMatches( selectedTournament.getId(), stage );
-				if ( stageMatches.size() == stageWinner.size() && stageWinner.size() >1 )
+				if ( stageMatches.size() == stageWinner.size() && stageWinner.size() > 1 )
 				{
 					List<Match> newMatches = MatchesUtil
 							.createMatches( stageWinner, selectedTournament.getId(), stage );
@@ -289,9 +290,24 @@ public class Controller implements EventHandler<ActionEvent>
 
 	private void createEditParticipantView ()
 	{
-		Participant participant = participantsTab.getSelectedParticipant();
-		editParticipants = new EditParticipants( primaryStage, participant );
-		editParticipants.addActions( this );
+
+		try
+		{
+			if ( db.readTournamentState( tournamentOverviewView.getTournament().getId() ) < 1 )
+			{
+				Participant participant = participantsTab.getSelectedParticipant();
+				editParticipants = new EditParticipants( primaryStage, participant );
+				editParticipants.addActions( this );
+			}
+			else
+			{
+				Dialogs.createWarningAlert( "Can't change Participant,\nbecause match is started", "Can't change" );
+			}
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
 	}
 
 	private void editParticipant ()
@@ -357,12 +373,13 @@ public class Controller implements EventHandler<ActionEvent>
 			editParticipants = new EditParticipants( primaryStage, participant );
 			editParticipants.addActions( this );
 			if ( matchTab != null && tournamentOverviewView.getTournament().getTournamentSize() > db
-					.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size()){
+					.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size() )
+			{
 			}
 		}
 		else
 		{
-			Dialogs.createWarningAlert( "Tournament is full", "Cant add Participant" );
+			Dialogs.createWarningAlert( "Tournament is full\nCan't add Participants", "Cant add Participant" );
 		}
 
 	}
@@ -372,43 +389,68 @@ public class Controller implements EventHandler<ActionEvent>
 		Participant participant = participantsTab.getSelectedParticipant();
 		try
 		{
-			if ( participant.isTemporary() )
+			if ( db.readTournamentState( tournamentOverviewView.getTournament().getId() ) < 1 )
 			{
-				db.removeParticipant( participant.getId() );
+				if ( participant.isTemporary() )
+				{
+					db.removeParticipant( participant.getId() );
+				}
+				else
+				{
+					db.removeParticipantFromTournament( tournamentOverviewView.getTournament().getId(),
+							participant.getId() );
+				}
+				participantsTab.populateTable(
+						db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 			}
 			else
 			{
-				db.removeParticipantFromTournament( tournamentOverviewView.getTournament().getId(),
-						participant.getId() );
+				Dialogs.createWarningAlert( "Can't remove Participant,\nbecause match is started", "Can't remove" );
 			}
+
 		}
 		catch ( SQLException throwables )
 		{
 			Dialogs.createErrorAlert( "Error while remove participant!!!\nError occurred while execute query" );
 			throwables.printStackTrace();
 		}
-		participantsTab
-				.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+
 	}
 
 	private void fillRandom ()
 	{
 		Tournament tournament = tournamentOverviewView.getTournament();
-		List<Participant> currentParticipants = db.readParticipantsForTournament( tournament.getId() );
-		List<Participant> temporaryParticipants = FillRandomUtil
-				.createTemporaryParticipants( tournament.getTournamentSize() - currentParticipants.size() );
+
 		try
 		{
-			db.createAllParticipants( temporaryParticipants, tournament.getId() );
+			if ( db.readTournamentState( tournament.getId() ) < 1 )
+			{
+				List<Participant> currentParticipants = db.readParticipantsForTournament( tournament.getId() );
+				List<Participant> temporaryParticipants = FillRandomUtil
+						.createTemporaryParticipants( tournament.getTournamentSize() - currentParticipants.size() );
+				if ( tournamentOverviewView.getTournament().getTournamentSize() > db
+						.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size() )
+				{
+					db.createAllParticipants( temporaryParticipants, tournament.getId() );
+
+					participantsTab.populateTable(
+							db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
+				}
+				else
+				{
+					Dialogs.createWarningAlert( "Tournament is full\nCan't add Participants", "Cant add Participant" );
+				}
+			}
+			else
+			{
+				Dialogs.createWarningAlert( "Can't fill wit random Participant,\nbecause match is started", "Can't fill Random" );
+			}
 		}
 		catch ( SQLException throwables )
 		{
-
 			Dialogs.createErrorAlert(
 					"Error while fill the tournament with random participants!!!\nError occurred while execute query" );
 		}
-		participantsTab
-				.populateTable( db.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ) );
 	}
 
 	private void startTournament ()
@@ -429,14 +471,15 @@ public class Controller implements EventHandler<ActionEvent>
 			{
 				throwables.printStackTrace();
 			}
-			TournamentStage tournamentStage = new TournamentStage( dbMatches, 1, false, dbMatches.size() );
-			StageTab stage1 = new StageTab( tournamentStage );
-			stage1.setText( "Stage 1" );
+
+			StageTab stage1 = MatchesUtil.createStageTab( 1,dbMatches,false );
 			stage1.addActions( this );
 			stagesTabs = new HashMap<>();
 			stagesTabs.put( 1, stage1 );
 			matchTab.createPrimaryTab( stagesTabs.get( 1 ) );
-		}else {
+		}
+		else
+		{
 			Dialogs.createErrorAlert( "Tournament cant be started because its not full" );
 		}
 	}

@@ -9,9 +9,11 @@ import ch.bbzsogr.ict2019.model.Participant;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -66,11 +68,10 @@ public class EditParticipants {
 		gridPane.setHgap( 30 );
 		gridPane.setVgap( 15 );
 		GridPane.setHalignment( saveBtn, HPos.RIGHT);
+		gridPane.setPadding( new Insets( 10 ) );
 
 		Scene scene = new Scene( gridPane );
 		stage = new Stage();
-		stage.setMinHeight( WINDOW_MIN_HEIGHT );
-		stage.setMinWidth( WINDOW_MIN_WIDTH );
 		stage.setTitle( WINDOW_TITLE );
 		stage.initModality( Modality.WINDOW_MODAL );
 		stage.setResizable( false );
@@ -106,6 +107,7 @@ public class EditParticipants {
 			temporaryCheckbox.setSelected( true );
 		}
 		errorTextField = new Label();
+		errorTextField.setTextFill( Color.RED );
 	}
 
 	public void addActions( EventHandler<ActionEvent> evh) {

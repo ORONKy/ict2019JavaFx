@@ -15,6 +15,13 @@ public class MatchesUtil
 
 	}
 
+	/**
+	 * Creates Random Matches out of a List of Participants
+	 * @param participantList List with the Participants which are the member of the new matches
+	 * @param tournamentId
+	 * @param stageNr stageId
+	 * @return List of Random matches
+	 */
 	public static List<Match> createMatches(List<Participant> participantList, int tournamentId, int stageNr)
 	{
 		List<Match> returnValue = new ArrayList<>();
@@ -35,6 +42,12 @@ public class MatchesUtil
 		return returnValue;
 	}
 
+	/**
+	 * Helper method for createMatches which removes a random Element of the input list.
+	 * @param list
+	 * @param <T>
+	 * @return the removed Item
+	 */
 	private static <T> T removeRandom(List<T> list)
 	{
 		Random random = new Random();
@@ -49,9 +62,18 @@ public class MatchesUtil
 
 	public static StageTab createStageTab(int stage, List<Match> matches, boolean finished)
 	{
-		TournamentStage stageObj = new TournamentStage( matches, stage, finished, 5 );
+		TournamentStage stageObj = new TournamentStage( matches, stage, finished, getTournamentParticipants( matches ) );
 		StageTab stageTab = new StageTab( stageObj );
 		stageTab.setText( "stage " + stage );
 		return stageTab;
+	}
+
+	public static int getTournamentParticipants(List<Match> matches){
+		List<Participant> participants = new ArrayList<>();
+		matches.forEach( match -> {
+			participants.add( match.getParticipant1() );
+			participants.add( match.getParticipant2() );
+		} );
+		return (int) participants.stream().filter( participant -> participant != null ).count();
 	}
 }

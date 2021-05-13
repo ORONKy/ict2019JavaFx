@@ -11,16 +11,14 @@ public class ValidationUtil
 
 	public static boolean validateCreateTournament ( String name, int size, Game game )
 	{
-		//TODO not implemented yet
-		return game != null;
+		return game != null && !name.isBlank();
 	}
 
 	public static boolean validateUser ( Participant participant )
 	{
-		if ( participant != null )
+		if ( participant != null)
 		{
-			if ( participant.getName() != null && participant.getName() != "" && Pattern
-					.matches( NO_WHITESPACE_PATTERN, participant.getName() ) )
+			if ( participant.getName() != null && !participant.getName().isBlank() )
 				return true;
 		}
 		return false;

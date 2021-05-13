@@ -6,22 +6,21 @@
 package ch.bbzsogr.ict2019.views;
 
 import ch.bbzsogr.ict2019.model.Game;
-import ch.bbzsogr.ict2019.model.Tournament;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +29,7 @@ import java.util.List;
  */
 public class CreateTournament {
 	private final String WINDOW_TITLE = "Create Tournament";
-	private final int WINDOW_MIN_WIDTH = 500;
+	private final int WINDOW_MIN_WIDTH = 400;
 	private final int WINDOW_MIN_HEIGHT = 250;
 
 	private Label titleLabel;
@@ -68,19 +67,25 @@ public class CreateTournament {
 
 		gridPane.setHgap( 30 );
 		gridPane.setVgap( 15 );
+		gridPane.setPadding( new Insets( 10 ) );
 		GridPane.setHalignment(createBtn, HPos.RIGHT);
 
 		Scene scene = new Scene( gridPane );
 		stage = new Stage();
-		stage.setMinHeight( WINDOW_MIN_HEIGHT );
-		stage.setMinWidth( WINDOW_MIN_WIDTH );
+		stage.setHeight( WINDOW_MIN_HEIGHT );
+		stage.setWidth( WINDOW_MIN_WIDTH );
 		stage.setTitle( WINDOW_TITLE );
 		stage.initModality( Modality.WINDOW_MODAL );
 		stage.setResizable( false );
 		stage.initOwner( primaryStage );
 		stage.setScene( scene );
 		stage.show();
+		scene.setOnKeyReleased( keyEvent -> {
+			if ( keyEvent.getCode() == KeyCode.ENTER ){
+			createBtn.fire();}});
 	}
+
+
 
 	private void initWindow(){
 		createBtn = new Button("Create");
