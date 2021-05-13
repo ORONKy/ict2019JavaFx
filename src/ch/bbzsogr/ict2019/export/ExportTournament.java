@@ -24,23 +24,24 @@ public class ExportTournament
 	 * @param data matches which should be exported
 	 * @return was the export successfully
 	 */
-	public static boolean export ( List<Match> data, String name, String location )
+	public static boolean export ( List<Match> data, String absolutePath )
 	{
 		List<String[]> dataLines = data.stream()
 				.map( match -> new String[] { String.valueOf( match.getStageNr() ), String.valueOf( match.getOrder() ),
 						match.getWinnerParticipantId().getName(),
-						match.getWinnerParticipantId().getId() == match.getParticipant1().getId() ?
+						match.getWinnerParticipantId().getId() != match.getParticipant1().getId() ?
 								match.getParticipant1().getName() :
-								match.getParticipant2().getName() } ).collect( Collectors.toList() );
+								match.getParticipant2() != null ? match.getParticipant2().getName() : "-" } )
+				.collect( Collectors.toList() );
+		dataLines.add( 0, new String[] { "Stage", "Order", "Winner", "Loser" } );
 		try
 		{
-			String path = location + File.separator + name;
-			new ExportTournament().writeCSV( dataLines, path );
+			new ExportTournament().writeCSV( dataLines, absolutePath );
 			return true;
 		}
 		catch ( FileNotFoundException e )
 		{
-			System.err.println(e);
+			System.err.println( e );
 			return false;
 		}
 	}
@@ -55,6 +56,7 @@ public class ExportTournament
 		File csvOutputFile = new File( path );
 		PrintWriter pw = new PrintWriter( csvOutputFile );
 		dataLines.stream().map( this::convertToCSV ).forEach( pw::println );
+		pw.close();
 
 	}
 }

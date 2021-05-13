@@ -11,10 +11,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.stage.Stage;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author varot
@@ -23,13 +19,11 @@ public class MatchTab extends Tab
 {
 	private Button startTournament;
 	private boolean started;
-	private boolean readyForStart;
 	private TabPane tabPane;
 
 	public MatchTab ()
 	{
 		setClosable( false );
-		readyForStart = false;
 		initStartTab();
 		setContent( startTournament );
 	}
@@ -37,7 +31,7 @@ public class MatchTab extends Tab
 	private void initStartTab ()
 	{
 		startTournament = new Button("Start Tournament");
-		startTournament.disableProperty().setValue( readyForStart );
+		startTournament.setDisable( false );
 	}
 
 	public void createPrimaryTab(Tab tab){
@@ -53,14 +47,6 @@ public class MatchTab extends Tab
 		return started;
 	}
 
-	public void setReadyForStart ( boolean readyForStart )
-	{
-		this.readyForStart = readyForStart;
-		if ( startTournament != null )
-		{
-			startTournament.disableProperty().setValue( readyForStart );
-		}
-	}
 
 	public void addTab(Tab tab){
 		if ( tabPane != null )

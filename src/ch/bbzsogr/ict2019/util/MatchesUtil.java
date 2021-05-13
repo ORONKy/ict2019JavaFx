@@ -20,7 +20,7 @@ public class MatchesUtil
 		List<Match> returnValue = new ArrayList<>();
 		List<Participant> participants = new ArrayList<>(participantList);
 
-		while ( participants.size() > 0 )
+		while ( participants.size() > 1 )
 		{
 			if ( participants.size() > 1 )
 			{
@@ -28,6 +28,9 @@ public class MatchesUtil
 				Participant participant2 = removeRandom( participants );
 				returnValue.add( new Match( 0, tournamentId, participant1, participant2, stageNr, 0, null  ) );
 			}
+		}
+		if ( participants.size() > 0 ){
+			returnValue.add( new Match( 0, tournamentId, participants.get( 0 ), null, stageNr,0, participants.get( 0 ) ) );
 		}
 		return returnValue;
 	}

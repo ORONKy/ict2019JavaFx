@@ -6,12 +6,14 @@
 package ch.bbzsogr.ict2019;
 
 import ch.bbzsogr.ict2019.db.DbConnector;
+import ch.bbzsogr.ict2019.export.ExportTournament;
 import ch.bbzsogr.ict2019.model.*;
 import ch.bbzsogr.ict2019.util.FillRandomUtil;
 import ch.bbzsogr.ict2019.util.MatchesUtil;
 import ch.bbzsogr.ict2019.util.ValidationUtil;
 import ch.bbzsogr.ict2019.views.*;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ public class Controller implements EventHandler<ActionEvent>
 	private EditParticipants editParticipants;
 	private MatchTab matchTab;
 	private Map<Integer, StageTab> stagesTabs;
+	private FileChoserWindow fileChooserView;
 
 	public Controller ( Stage primaryStage )
 	{
@@ -123,6 +126,10 @@ public class Controller implements EventHandler<ActionEvent>
 		{
 			startTournament();
 		}
+		else if ( this.tournamentOverviewView != null && source == this.tournamentOverviewView.getExportBtn() )
+		{
+			tournamentExport();
+		}
 		else
 		{
 			handleMatchesButton( source );
@@ -138,29 +145,30 @@ public class Controller implements EventHandler<ActionEvent>
 		if ( stagesTabs == null )
 			return;
 		List<Match> allMatches = stagesTabs.entrySet().stream()
-				.map( map -> map.getValue().getTournamentStage().getMatches() ).flatMap( List::stream ).collect( Collectors.toList() );
+				.map( map -> map.getValue().getTournamentStage().getMatches() ).flatMap( List::stream )
+				.collect( Collectors.toList() );
 		for ( Match match : allMatches )
 		{
 			if ( match.getParticipant1los() == source )
 			{
-				setMatchWinner( match.getStageNr() ,match.getParticipant2(), match.getId() );
+				setMatchWinner( match.getStageNr(), match.getParticipant2(), match.getId() );
 			}
 			else if ( match.getParticipant1win() == source )
 			{
-				setMatchWinner( match.getStageNr() ,match.getParticipant1(), match.getId() );
+				setMatchWinner( match.getStageNr(), match.getParticipant1(), match.getId() );
 			}
 			else if ( match.getParticipant2los() == source )
 			{
-				setMatchWinner( match.getStageNr() ,match.getParticipant1(), match.getId() );
+				setMatchWinner( match.getStageNr(), match.getParticipant1(), match.getId() );
 			}
 			else if ( match.getParticipant2win() == source )
 			{
-				setMatchWinner( match.getStageNr() ,match.getParticipant2(), match.getId() );
+				setMatchWinner( match.getStageNr(), match.getParticipant2(), match.getId() );
 			}
 		}
 	}
 
-	private void setMatchWinner(int stage, Participant winnerParticipant, int matchId)
+	private void setMatchWinner ( int stage, Participant winnerParticipant, int matchId )
 	{
 		try
 		{
@@ -168,22 +176,26 @@ public class Controller implements EventHandler<ActionEvent>
 			Tournament selectedTournament = tournamentListView.getSelectedTournament();
 			List<Match> dbMatches = db.readMatches( selectedTournament.getId(), stage );
 			boolean stageFinished = dbMatches.stream().filter( p -> p.getWinnerParticipantId() != null ).count() > 0;
-			stagesTabs.get( stage ).refreshStage( new TournamentStage( dbMatches, stage, stageFinished, dbMatches.size() ) );
+			stagesTabs.get( stage )
+					.refreshStage( new TournamentStage( dbMatches, stage, stageFinished, dbMatches.size() ) );
 			stagesTabs.get( stage ).addActions( this );
 			if ( stageFinished )
 			{
-				List<Participant> stageWinner = db.readStageWinner( selectedTournament.getId(), stage);
-				if ( stageWinner.size() > 1 )
+				List<Participant> stageWinner = db.readStageWinner( selectedTournament.getId(), stage );
+				List<Match> stageMatches = db.readMatches( selectedTournament.getId(), stage );
+				if ( stageMatches.size() == stageWinner.size() && stageWinner.size() >1 )
 				{
-					List<Match> newMatches = MatchesUtil.createMatches( stageWinner, selectedTournament.getId(), stage);
-					db.addAllMatches( selectedTournament.getId(), newMatches, stage +1 );
-					db.writeTournamentStage( selectedTournament.getId(), stage+1 );
-					createAndAddStageTabToMatchTab( selectedTournament.getId(), stage+1, false);
+					List<Match> newMatches = MatchesUtil
+							.createMatches( stageWinner, selectedTournament.getId(), stage );
+					db.addAllMatches( selectedTournament.getId(), newMatches, stage + 1 );
+					db.writeTournamentStage( selectedTournament.getId(), stage + 1 );
+					createAndAddStageTabToMatchTab( selectedTournament.getId(), stage + 1, false );
 
-				}else
+				}
+				else
 				{
 					if ( !stageWinner.isEmpty() )
-					db.writeMatchWinner( stageWinner.get( 0 ).getId(),selectedTournament.getId()	 );
+						db.writeMatchWinner( stageWinner.get( 0 ).getId(), selectedTournament.getId() );
 				}
 			}
 		}
@@ -208,7 +220,7 @@ public class Controller implements EventHandler<ActionEvent>
 			{
 				for ( int i = 0; i < stage; i++ )
 				{
-					createAndAddStageTabToMatchTab( selectedTournament.getId(), i+1, i+1 == stage );
+					createAndAddStageTabToMatchTab( selectedTournament.getId(), i + 1, i + 1 == stage );
 				}
 			}
 
@@ -218,17 +230,19 @@ public class Controller implements EventHandler<ActionEvent>
 			throwables.printStackTrace();
 		}
 		tournamentOverviewView = new TournamentOverview( primaryStage, selectedTournament, participantsTab, matchTab );
+		tournamentOverviewView.addAction( this );
 
 	}
 
 	/**
 	 * Create an Stage tab and add it to the Matches Tab
 	 * Takes all Matches from a stage
+	 *
 	 * @param tournamentId the id of the tournament
-	 * @param stageId the stage nr
-	 * @param isFinished true if the stage is finished
+	 * @param stageId      the stage nr
+	 * @param isFinished   true if the stage is finished
 	 */
-	private void createAndAddStageTabToMatchTab(int tournamentId, int stageId, boolean isFinished)
+	private void createAndAddStageTabToMatchTab ( int tournamentId, int stageId, boolean isFinished )
 	{
 		createAndAddStageTabToMatchTab( stageId, isFinished, db.readMatches( tournamentId, stageId ) );
 	}
@@ -236,18 +250,18 @@ public class Controller implements EventHandler<ActionEvent>
 	/**
 	 * Create an Staage tab and add it to the Matches Tab
 	 * Takes custom Matches
-	 * @param stageId the Stage nr
+	 *
+	 * @param stageId    the Stage nr
 	 * @param isFinished true if the stage is finished
-	 * @param matches the matches which are part of the stage
+	 * @param matches    the matches which are part of the stage
 	 */
-	private void createAndAddStageTabToMatchTab(int stageId, boolean isFinished, List<Match> matches)
+	private void createAndAddStageTabToMatchTab ( int stageId, boolean isFinished, List<Match> matches )
 	{
 		StageTab stageTab = MatchesUtil.createStageTab( stageId, matches, isFinished );
 		matchTab.addTab( stageTab );
 		stagesTabs.put( stageId, stageTab );
 		stageTab.addActions( this );
 	}
-
 
 	private void createNewTournament ()
 	{
@@ -342,6 +356,9 @@ public class Controller implements EventHandler<ActionEvent>
 			Participant participant = new Participant( true );
 			editParticipants = new EditParticipants( primaryStage, participant );
 			editParticipants.addActions( this );
+			if ( matchTab != null && tournamentOverviewView.getTournament().getTournamentSize() > db
+					.readParticipantsForTournament( tournamentOverviewView.getTournament().getId() ).size()){
+			}
 		}
 		else
 		{
@@ -398,25 +415,53 @@ public class Controller implements EventHandler<ActionEvent>
 	{
 		Tournament tournament = tournamentOverviewView.getTournament();
 		List<Participant> participants = db.readParticipantsForTournament( tournament.getId() );
-		List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1 );
-		List<Match> dbMatches = null;
-		try
+		if ( tournament.getTournamentSize() == participants.size() )
 		{
-			db.addAllMatches( tournament.getId(), matches, 1 );
-			db.updateTournamentState( tournament.getId(), 1 );
-			dbMatches = db.readMatches( tournament.getId(), 1 );
+			List<Match> matches = MatchesUtil.createMatches( participants, tournament.getId(), 1 );
+			List<Match> dbMatches = null;
+			try
+			{
+				db.addAllMatches( tournament.getId(), matches, 1 );
+				db.updateTournamentState( tournament.getId(), 1 );
+				dbMatches = db.readMatches( tournament.getId(), 1 );
+			}
+			catch ( SQLException throwables )
+			{
+				throwables.printStackTrace();
+			}
+			TournamentStage tournamentStage = new TournamentStage( dbMatches, 1, false, dbMatches.size() );
+			StageTab stage1 = new StageTab( tournamentStage );
+			stage1.setText( "Stage 1" );
+			stage1.addActions( this );
+			stagesTabs = new HashMap<>();
+			stagesTabs.put( 1, stage1 );
+			matchTab.createPrimaryTab( stagesTabs.get( 1 ) );
+		}else {
+			Dialogs.createErrorAlert( "Tournament cant be started because its not full" );
 		}
-		catch ( SQLException throwables )
+	}
+
+	private void tournamentExport ()
+	{
+		fileChooserView = new FileChoserWindow( this.primaryStage );
+		File file = fileChooserView.showWindow();
+		if ( file != null )
 		{
-			throwables.printStackTrace();
+			int tournamentId = tournamentOverviewView.getTournament().getId();
+			boolean success = ExportTournament.export( db.readMatches( tournamentId ), file.getAbsolutePath() );
+			if ( success )
+			{
+				Dialogs.infoAlert( "Tournament successfully exported" );
+			}
+			else
+			{
+				Dialogs.createErrorAlert( "Cant create Export" );
+			}
 		}
-		TournamentStage tournamentStage = new TournamentStage( dbMatches, 1, false, dbMatches.size() );
-		StageTab stage1 = new StageTab( tournamentStage );
-		stage1.setText( "Stage 1" );
-		stage1.addActions( this );
-		stagesTabs = new HashMap<>();
-		stagesTabs.put( 1, stage1 );
-		matchTab.createPrimaryTab( stagesTabs.get( 1 ) );
+		else
+		{
+			Dialogs.createErrorAlert( "You need to create a *.csv file" );
+		}
 	}
 
 }

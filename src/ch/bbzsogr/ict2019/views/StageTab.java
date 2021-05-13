@@ -4,23 +4,28 @@ import ch.bbzsogr.ict2019.model.Match;
 import ch.bbzsogr.ict2019.model.TournamentStage;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StageTab extends Tab
 {
 	private TournamentStage tournamentStage;
-	private List<GridPane> matches;
+	private List<BorderedTitledPane> matches;
 	private VBox matchesVBox;
 	private HBox infoBox;
 
@@ -28,12 +33,15 @@ public class StageTab extends Tab
 	private Label matchesCount;
 	private Label participantsCount;
 
+	private ScrollPane scrollPane;
+
 	public StageTab ( TournamentStage tournamentStage )
 	{
+		scrollPane = new ScrollPane();
 		matches = new ArrayList<>();
 		this.tournamentStage = tournamentStage;
 		initTab();
-
+		scrollPane.setMaxHeight( 500 );
 		setClosable( false );
 	}
 
@@ -56,14 +64,15 @@ public class StageTab extends Tab
 		infoBox.setSpacing( 30 );
 		matchesVBox.getChildren().add( infoBox );
 		matchesVBox.setSpacing( 40 );
-		setContent( matchesVBox );
+		scrollPane.setContent( matchesVBox );
+		setContent( scrollPane );
 		fillMatchGridPaneList( tournamentStage.getMatches() );
 		generateMatches();
 	}
 
 	public void generateMatches ()
 	{
-		for ( GridPane pane : matches )
+		for ( BorderedTitledPane pane : matches )
 		{
 			matchesVBox.getChildren().add( pane );
 		}
@@ -77,7 +86,9 @@ public class StageTab extends Tab
 			GridPane matchPane = new GridPane();
 			Label vsLabel = new Label( "VS" );
 			Label p1Name = new Label( match.getParticipant1().getName() );
-			Label p2Name = new Label( match.getParticipant2().getName() );
+			p1Name.setFont( Font.font( 20 ) );
+			Label p2Name = match.getParticipant2() != null ? new Label( match.getParticipant2().getName() ) : new Label("-");
+			p2Name.setFont( Font.font( 20 ) );
 
 			if ( match.getWinnerParticipantId() == null )
 			{
@@ -111,29 +122,33 @@ public class StageTab extends Tab
 			{
 				Label win = new Label( "W" );
 				win.setTextFill( Color.GREEN );
+				win.setFont( Font.font( 30 ) );
 				Label lose = new Label( "L" );
 				lose.setTextFill( Color.RED );
+				lose.setFont( Font.font( 30 ) );
 
 				if ( match.getWinnerParticipantId().getId() == match.getParticipant1().getId() )
 				{
-					matchPane.add( win, 0, 0 );
-					matchPane.add( lose, 2, 0 );
+					matchPane.add( win, 1, 1 );
+					matchPane.add( lose, 2, 1 );
 				}
 				else
 				{
-					matchPane.add( lose, 0, 0 );
-					matchPane.add( win, 2, 0 );
+					matchPane.add( lose, 0, 1 );
+					matchPane.add( win, 2, 1 );
 				}
 
 			}
 
-			matchPane.add( p1Name, 0, 1 );
-			matchPane.add( vsLabel, 1, 1 );
-			matchPane.add( p2Name, 2, 1 );
-			matchPane.setGridLinesVisible( true );
+			matchPane.add( p1Name, 0, 2 );
+			matchPane.add( vsLabel, 1, 2 );
+			matchPane.add( p2Name, 2, 2 );
 			matchPane.setHgap( 15 );
 			matchPane.setHgap( 5 );
-			matches.add( matchPane );
+			matchPane.setHgap( 30 );
+			matchPane.setPadding( new Insets( 20 ) );
+			BorderedTitledPane btp = new BorderedTitledPane("Match "+match.getStageNr()+"."+matchList.indexOf( match ), matchPane);
+			matches.add( btp );
 		}
 	}
 
@@ -167,5 +182,21 @@ public class StageTab extends Tab
 		matches = new ArrayList<>();
 		this.tournamentStage = stage;
 		initTab();
+	}
+}
+
+class BorderedTitledPane extends StackPane
+{
+	BorderedTitledPane(String titleString, Node content) {
+		Label title = new Label("  " + titleString + "  ");
+		title.getStyleClass().add("bordered-titled-title");
+		StackPane.setAlignment(title, Pos.TOP_LEFT);
+
+		StackPane contentPane = new StackPane();
+		content.getStyleClass().add("bordered-titled-content");
+		contentPane.getChildren().add(content);
+
+		getStyleClass().add("bordered-titled-border");
+		getChildren().addAll(title, contentPane);
 	}
 }

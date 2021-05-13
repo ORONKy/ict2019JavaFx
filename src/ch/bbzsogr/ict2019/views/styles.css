@@ -1,0 +1,21 @@
+.table-view .column-header .label{
+    -fx-alignment:top-left;
+}
+
+.bordered-titled-title {
+  -fx-background-color: white;
+  -fx-translate-y: -16;
+}
+
+.bordered-titled-border {
+  -fx-content-display: top;
+  -fx-border-insets: 20 15 15 15;
+  -fx-background-color: white;
+  -fx-border-color: black;
+  -fx-border-width: 1;
+}
+
+.bordered-titled-content {
+  -fx-padding: 26 10 10 10;
+}
+

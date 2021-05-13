@@ -242,15 +242,67 @@ public class DbConnector
 
 	public void addMatch ( int tournamentId, Match match, int stage, int order ) throws SQLException
 	{
-		String sql = "INSERT INTO `match`(TournamentID, Participant1ID, Participant2ID, Stage, `Order`) VALUE (?,?,?,?,?)";
+		String sql = "INSERT INTO `match`(TournamentID, Participant1ID, Participant2ID, Stage, `Order`, WinnerParticipantID) VALUE (?,?,?,?,?,?)";
 
 		PreparedStatement preparedStatement = conn.prepareStatement( sql );
 		preparedStatement.setInt( 1, tournamentId );
 		preparedStatement.setInt( 2, match.getParticipant1().getId() );
-		preparedStatement.setInt( 3, match.getParticipant2().getId() );
+		if ( match.getParticipant2() != null )
+		{
+			preparedStatement.setInt( 3, match.getParticipant2().getId() );
+		}else{
+			preparedStatement.setNull( 3, Types.NULL);
+		}
 		preparedStatement.setInt( 4, stage );
 		preparedStatement.setInt( 5, order );
+		if ( match.getWinnerParticipantId() == null ){
+			preparedStatement.setNull( 6, Types.NULL );
+		}else {
+			preparedStatement.setInt( 6, match.getWinnerParticipantId().getId() );
+		}
 		preparedStatement.executeUpdate();
+	}
+
+	public List<Match> readMatches (int tournamentId){
+		List<Match> returnValue = new ArrayList<>();
+		ResultSet resultSet;
+		PreparedStatement statement;
+
+		String sql = "Select match.ID             as id, " + "       `match`.TournamentID as tid, "
+				+ "       `match`.Stage        as stage, " + "       `match`.`Order`, "
+				+ "       `match`.WinnerParticipantID as winner, " + "       p1.ID                as p1id, "
+				+ "       p1.Name              as p1name, " + "       p1.IsTemporary       as p1temporary, "
+				+ "       p1.IsTeam            as p1team, " + "       p2.ID                as p2id, "
+				+ "       p2.Name              as p2name, " + "       p2.IsTemporary       as p2temporary, "
+				+ "       p2.IsTeam            as p2team " + "FROM `match` "
+				+ "         LEFT JOIN participant p1 on p1.ID = `match`.Participant1ID "
+				+ "         LEFT JOIN participant p2 on p2.ID = `match`.Participant2ID "
+				+ "WHERE `match`.TournamentID = ? ;";
+
+		try
+		{
+			statement = conn.prepareStatement( sql );
+			statement.setInt( 1, tournamentId );
+			statement.executeQuery();
+			resultSet = statement.getResultSet();
+
+			while ( resultSet.next() )
+			{
+				Participant p1 = new Participant( resultSet.getInt( "p1id" ), resultSet.getString( "p1name" ),
+						resultSet.getInt( "p1temporary" ) == 1, resultSet.getInt( "p1team" ) == 1 );
+				Participant p2 = new Participant( resultSet.getInt( "p2id" ), resultSet.getString( "p2name" ),
+						resultSet.getInt( "p2temporary" ) == 1, resultSet.getInt( "p2team" ) == 1 );
+				Participant winner =
+						resultSet.getInt( "winner" ) == 0 ? null : resultSet.getInt( "winner" ) == p1.getId() ? p1 : p2;
+				returnValue.add( new Match( resultSet.getInt( "id" ), resultSet.getInt( "tid" ), p1, p2,
+						resultSet.getShort( "stage" ), resultSet.getInt( "order" ), winner ) );
+			}
+		}
+		catch ( SQLException throwables )
+		{
+			throwables.printStackTrace();
+		}
+		return returnValue;
 	}
 
 	public List<Match> readMatches ( int tournamentId, int stage )
@@ -282,8 +334,8 @@ public class DbConnector
 			{
 				Participant p1 = new Participant( resultSet.getInt( "p1id" ), resultSet.getString( "p1name" ),
 						resultSet.getInt( "p1temporary" ) == 1, resultSet.getInt( "p1team" ) == 1 );
-				Participant p2 = new Participant( resultSet.getInt( "p2id" ), resultSet.getString( "p2name" ),
-						resultSet.getInt( "p2temporary" ) == 1, resultSet.getInt( "p2team" ) == 1 );
+				Participant p2 = resultSet.getString( "p2name" ) != null ? new Participant( resultSet.getInt( "p2id" ), resultSet.getString( "p2name" ),
+						resultSet.getInt( "p2temporary" ) == 1, resultSet.getInt( "p2team" ) == 1 ): null;
 				Participant winner =
 						resultSet.getInt( "winner" ) == 0 ? null : resultSet.getInt( "winner" ) == p1.getId() ? p1 : p2;
 				returnValue.add( new Match( resultSet.getInt( "id" ), resultSet.getInt( "tid" ), p1, p2,
@@ -374,5 +426,9 @@ public class DbConnector
 		preparedStatement.setInt( 1, stage );
 		preparedStatement.setInt( 2, tournamentId );
 		preparedStatement.executeUpdate();
+	}
+
+	public void isStageFinished(int tournamentId, int stage) {
+
 	}
 }

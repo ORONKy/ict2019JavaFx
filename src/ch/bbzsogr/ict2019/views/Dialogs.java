@@ -16,7 +16,7 @@ public class Dialogs
 	 * Shows an Warning alert with ok Button
 	 *
 	 * @param message message which should be shown
-	 * @param title title which should be shown
+	 * @param title   title which should be shown
 	 */
 	public static void createWarningAlert ( String message, String title )
 	{
@@ -27,11 +27,18 @@ public class Dialogs
 
 	/**
 	 * Shows a simple Error alert
+	 *
 	 * @param message message which should be shown
 	 */
 	public static void createErrorAlert ( String message )
 	{
 		Alert alert = new Alert( Alert.AlertType.ERROR, message, ButtonType.OK );
+		alert.showAndWait();
+	}
+
+	public static void infoAlert ( String message )
+	{
+		Alert alert = new Alert( Alert.AlertType.INFORMATION, message, ButtonType.OK );
 		alert.showAndWait();
 	}
 }

@@ -131,4 +131,9 @@ public class ParticipantsTab extends Tab
 	{
 		return fillRandomBtn;
 	}
+
+	public int getParticipantsCount ()
+	{
+		return observableList != null ? observableList.size():0;
+	}
 }

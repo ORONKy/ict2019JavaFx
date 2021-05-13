@@ -6,6 +6,7 @@
 package ch.bbzsogr.ict2019.views;
 
 import ch.bbzsogr.ict2019.model.Tournament;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,10 +21,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- *
  * @author varot
  */
-public class TournamentOverview {
+public class TournamentOverview
+{
 
 	private GridPane gridPane;
 	private Stage stage;
@@ -40,7 +41,7 @@ public class TournamentOverview {
 
 	private final String WINDOW_TITLE = "Tournament Overview";
 
-	public TournamentOverview ( Stage primaryStage, Tournament tournament, Tab participantTab, Tab matchesTab)
+	public TournamentOverview ( Stage primaryStage, Tournament tournament, Tab participantTab, Tab matchesTab )
 	{
 		this.tournament = tournament;
 		this.participantTab = participantTab;
@@ -50,15 +51,13 @@ public class TournamentOverview {
 		initTabPane();
 
 		gridPane = new GridPane();
-		GridPane.setHalignment(exportBtn, HPos.RIGHT);
+		GridPane.setHalignment( exportBtn, HPos.RIGHT );
 
-
-		gridPane.add( imgView,0,0, 2, 1 );
-		gridPane.add( tournamentNameLabel,0,1, 2, 1 );
-		gridPane.add( gameLabel,0,2, 1, 1 );
-		gridPane.add( exportBtn,1,2, 1, 1 );
+		gridPane.add( imgView, 0, 0, 2, 1 );
+		gridPane.add( tournamentNameLabel, 0, 1, 2, 1 );
+		gridPane.add( gameLabel, 0, 2, 1, 1 );
+		gridPane.add( exportBtn, 1, 2, 1, 1 );
 		gridPane.add( tabPane, 0, 3, 2, 1 );
-
 
 		Scene scene = new Scene( gridPane );
 		stage = new Stage();
@@ -67,34 +66,38 @@ public class TournamentOverview {
 		stage.sizeToScene();
 		stage.setResizable( false );
 		stage.initOwner( primaryStage );
+		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 		stage.setScene( scene );
-		stage.sizeToScene();
+
 		stage.show();
 	}
 
-	private void initWindow(){
-		img = new Image("header.png", 341, 85, false, false);
-		imgView = new ImageView(img);
+	private void initWindow ()
+	{
+		img = new Image( "header.png", 341, 85, false, false );
+		imgView = new ImageView( img );
 		updateTournamentRelatedItems();
 
-		exportBtn = new Button("Export");
+		exportBtn = new Button( "Export" );
 	}
 
-	private void initTabPane(){
+	private void initTabPane ()
+	{
 		tabPane = new TabPane();
 		tabPane.getTabs().add( participantTab );
 		participantTab.setText( "participant" );
 		tabPane.getTabs().add( matchesTab );
 		matchesTab.setText( "Matches" );
 
-		tabPane.setTabClosingPolicy( TabPane.TabClosingPolicy.UNAVAILABLE);
+		tabPane.setTabClosingPolicy( TabPane.TabClosingPolicy.UNAVAILABLE );
 
 	}
 
-	private void updateTournamentRelatedItems(){
-		gameLabel = new Label(tournament.getGame());
+	private void updateTournamentRelatedItems ()
+	{
+		gameLabel = new Label( tournament.getGame() );
 		gameLabel.setFont( Font.font( 40 ) );
-		tournamentNameLabel = new Label( tournament.getTitle());
+		tournamentNameLabel = new Label( tournament.getTitle() );
 		tournamentNameLabel.setFont( Font.font( 55 ) );
 	}
 
@@ -103,7 +106,13 @@ public class TournamentOverview {
 		return exportBtn;
 	}
 
-	public Tournament getTournament(){
+	public void addAction ( EventHandler evh )
+	{
+		exportBtn.setOnAction( evh );
+	}
+
+	public Tournament getTournament ()
+	{
 		return tournament;
 	}
 
